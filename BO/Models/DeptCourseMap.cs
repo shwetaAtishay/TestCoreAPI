@@ -13,5 +13,7 @@ namespace BO.Models
         public string Course { get; set; }
         public int SubjectID { get; set; }
         public int ClassID { get; set; }
+
+        public string DegreeName { get; set; }
     }
 }
