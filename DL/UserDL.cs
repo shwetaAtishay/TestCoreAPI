@@ -2523,12 +2523,12 @@ namespace DL
             try
             {
 
-                SqlParameter[] param = new SqlParameter[4];
+                SqlParameter[] param = new SqlParameter[5];
                 param[0] = new SqlParameter("@Fk_DeptId", mapping.deptId);
                 param[1] = new SqlParameter("@Fk_CourseId", mapping.courseId);
                 param[2] = new SqlParameter("@Fk_SubjectId", mapping.SubjectID);
                 param[3] = new SqlParameter("@iClassId", mapping.ClassID);
-
+                param[4] = new SqlParameter("@sDegree", mapping.DegreeName);
                 DataSet ds = BaseFunction.FillDataSet("[dbo].[USP_ADMIN_DeptCourseMap_Save]", param);
                 if (ds != null && ds.Tables != null && ds.Tables[0].Rows.Count > 0)
                 {
@@ -3098,5 +3098,35 @@ namespace DL
             }
             return objResponseData;
         }
+
+        #region GetDegrees Anil
+        public ResponseData GetDegrees()
+        {
+            try
+            {
+
+                DataSet ds = BaseFunction.FillDataSet("[dbo].[USP_Master_Degrees_List]");
+                if (ds != null && ds.Tables != null && ds.Tables[0].Rows.Count > 0)
+                {
+                    objResponseData.ResponseCode = "000";
+                    objResponseData.Message = "Subject  List";
+                    objResponseData.statusCode = 1;
+                    objResponseData.Data = ds.Tables[0];
+                }
+                else
+                {
+                    objResponseData.ResponseCode = "001";
+                    objResponseData.Message = "No Data Available...";
+                    objResponseData.statusCode = -1;
+                }
+            }
+            catch (Exception e)
+            {
+                ExceptionLogDL.SendExcepToDB(e, 0, "Class : AdminDL / Function : GetGeoGraphicalList", connectionString);
+            }
+            return objResponseData;
+        }
+
+        #endregion
     }
 }
