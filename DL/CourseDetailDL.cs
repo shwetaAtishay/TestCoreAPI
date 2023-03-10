@@ -104,6 +104,7 @@ namespace DL
                         objdoc.iFK_DeptId = ds.Tables[0].Rows[i]["iFK_DeptId"].NulllToInt();
                         objdoc.ClgId = ds.Tables[0].Rows[i]["ClgId"].NulllToInt();
                         objdoc.Sublist = ds.Tables[0].Rows[i]["Sublist"].NulllToString();
+                        objdoc.Fk_StatusId = ds.Tables[0].Rows[i]["Fk_StatusId"].NulllToInt();
                         objlist.Add(objdoc);
                     }
                 }
