@@ -406,6 +406,51 @@ namespace TestCoreAPI.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("ActiveInactiveUser")]
+        public ResponseData ActiveInactiveUser(string PartyId, string status)
+        {
+            try
+            {
+                var objResponseData = objAdminBL.ActiveInactiveUser(PartyId, status);
+                return objResponseData;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+
+        [HttpPost]
+        [Route("UpdateVerificationStatus")]
+        public ResponseData UpdateVerificationStatus(string PartyId, string colName, string colValue, int status)
+        {
+            try
+            {
+                var objResponseData = objAdminBL.UpdateVerificationStatus(PartyId, colName, colValue, status);
+                return objResponseData;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        
+        [HttpPost]
+        [Route("RegisteredUserData")]
+        public ResponseData RegisteredUserData()
+        {
+            try
+            {
+                var objResponseData = objAdminBL.RegisteredUserData();
+                return objResponseData;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
 
     }
 
