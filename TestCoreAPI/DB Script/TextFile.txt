@@ -1,0 +1,149 @@
+﻿____________________________________________________________________________________10.03.2023______________________________________________________________________________________
+ --========================================================================
+ --Author:<Vivek Choudhary>
+ --Create Date:<26.Sep.2022>
+ --Description:<This procedure is use to check SSO User exists or not>
+ --======================================================================
+Alter Procedure [dbo].[USP_ADMIN_Check_SSOUser_Select] --'Zapurse1'
+@ssoiD nvarchar(1000) = null
+as
+begin
+	if exists(select * from PRTYMST where sName = @ssoiD)
+	begin
+		select 0 as StatusCode, 'SSO Already Exists' as [Message]
+	end
+	else
+	begin
+			select 1 as StatusCode, 'SSO Details Not Found' as [Message]
+	end
+end
+GO
+-------------------------------------------------------------------------------------------------------------------------------------------------
+Update the Procedure "USP_ADMIN_GetMasterDataForDropdown_View" with following condition : MstDeptApplicationList
+
+if(@type='MstDeptApplicationList')
+begin
+select
+ T2.ipkMstID
+,T2.sApplID
+,T2.stypeID
+,T2.iFK_ClgID
+,clg.sNameOfClg as CollegeName
+,T2.iFK_DeptID
+,dept.sDeptName as Dept
+,T2.iFK_TrstID
+,trust.sName as Trust
+, STUFF((Select ', '+NOCCOUSTEMINFO.sName
+from (select MST_DeptAppl.ipkMstID,value from MST_DeptAppl cross apply string_split(stypeID,',')) T1
+inner join  NOCCOUSTEMINFO on T1.value=NOCCOUSTEMINFO.iNocCstId 
+where T1.ipkMstID = T2.ipkMstID
+FOR XML PATH('')),1,1,'')  stypeName
+,dtCrtdOn
+,dTotalFee
+,isnull(sum(hst.dPaidAMT),0) PaidAmnt
+,isnull(dTotalFee-sum(dPaidAMT),dTotalFee)  DueAMT
+from 
+MST_DeptAppl T2  
+inner join APLCTNBASICINFO clg on clg.iPk_ClgID = T2.iFK_ClgID
+left join DPETMST dept on dept.iPK_DeptId = T2.iFK_DeptID
+inner join TRSTINFO trust on trust.PK_TrstInfoId = T2.iFK_TrstID
+left join MST_PMTHSTRY hst on hst.sFK_ApplID = T2.sApplID
+where clg.iFk_TrstInfoId = @PartyId
+group by T2.ipkMstID,T2.sApplID,T2.stypeID,T2.iFK_ClgID,clg.sNameOfClg,T2.iFK_DeptID,dept.sDeptName,T2.iFK_TrstID,trust.sName,dtCrtdOn,
+dTotalFee
+order by T2.dtCrtdOn desc
+end
+
+
+
+___________________________________________________________________________________________________________________________________________________________________________________
+-- =============================================
+-- Author: <Vivek Choudhary>
+-- Create date: <29.Sep.2022>
+-- Description:	<This procedure is used to update the verification status for logged in user from login and security page ex : pan verify, aadhaar verify etc>
+-- =============================================
+ALTER Procedure [dbo].[USP_ADMIN_UsersDocverification_Update]
+
+@col nvarchar(50),
+@colVal nvarchar(50) = null,
+@status int,
+@partyId nvarchar(500)
+as
+begin
+	if(@col = 'Aadhar')
+		begin
+			update PRTYMST set iAadharVerifed = @status, sAadharCrd=case when @colVal is null then sAadharCrd else @colVal end where sPK_PrtyCode = @partyId
+			select 1 as StatusCode , 'Updated Successfully' as [Message]
+		end
+	if(@col = 'Email')
+		begin
+			update PRTYMST set iEmailVerifed = @status, sEmailId=@colVal where sPK_PrtyCode = @partyId
+			select 1 as StatusCode , 'Updated Successfully' as [Message]
+		end
+	if(@col = 'Pan')
+		begin
+			update PRTYMST set iPanVerifed = @status, sPanCrd=case when @colVal is null then sPanCrd else @colVal end where sPK_PrtyCode = @partyId
+			select 1 as StatusCode , 'Updated Successfully' as [Message]
+		end
+	if(@col = 'Mobile')
+		begin
+			update PRTYMST set sMobileVerifed = @status, sMobileNo =@colVal where sPK_PrtyCode = @partyId
+			select 1 as StatusCode , 'Updated Successfully' as [Message]
+		end
+	if(@col = 'Role')
+		begin
+			update PRTYMST set iRoleId = @colVal where sPK_PrtyCode = @partyId
+			select 1 as StatusCode , 'Updated Successfully' as [Message]
+		end
+end
+
+Go
+
+____________________________________________________________________________________________________________________________________________________
+
+ --========================================================================
+ --Author:<Vivek Choudhary>
+ --Create Date:<26.Sep.2022>
+ --Description:<This procedure is use to bind the grid on active in-active user page>
+ --======================================================================
+ALTER Procedure [dbo].[USP_ADMIN_Active_InactiveUser_View]
+as
+begin
+	--select Typedata.Name as userType,T2.PartyId,Isnull(T2.RegistrationNo,'NA') as RegistrationNo,T2.Name as userName,T2.FirstName,T2.MobileNumber,
+	--Isnull(STUFF((Select ','+CategoryMaster.Name    
+	--from (select PartyMaster.PartyId,value from PartyMaster cross apply string_split(ServicesCollection,',')) T1    
+	--inner join CategoryMaster on T1.value=CategoryMaster.CategoryId    
+	--where T1.PartyId=T2.PartyId
+	--FOR XML PATH('')),1,1,''),'NA') ServiceList,'NA' as HardwareList,PaymentStatus,isnull(T2.IsActive,0) IsActive
+	--from PartyMaster T2  inner join 
+	--CustomEnum Typedata on Typedata.Id=T2.Type and Typedata.EnumNo=7
+	--Left outer join OrderBooking OB on OB.RegistrationNo = T2.RegistrationNo
+
+	Begin try
+		select '' as UserType
+		,T2.sPK_PrtyCode
+		,Isnull(T2.sRegNo,'NA') as RegistrationNo
+		,T2.sName as UserName
+		,T2.sFstName
+		,T2.sMobileNo
+		,T2.sEmailId
+		,'' Servicecollection
+		,'' Hardwarecollection
+		,isnull(T2.iIsActv,0) IsActive
+		,'' as PaymentStatus
+		,R.sRolName as Role
+		,T2.iRoleId
+			from PRTYMST T2 inner join ROLEMST R on R.iPk_RolId = T2.iRoleId
+			where sSrvicC is null and iLocLvl is not null
+order by T2.dtCrtdDt desc
+
+	End Try 
+	begin catch			
+			EXEC [dbo].[USP_ADMIN_StoreProcedureErrorHandling_Save] 0,0,1 --To log Stored procedure errors
+			select -1 as StatusCode, 'Check Error - ' + cast(ERROR_Number() as varchar) + ' ' + ERROR_MESSAGE () as [Message],'' AS Body
+	end catch
+
+end
+
+GO
+__________________________________________________________________________________________________________________________________________

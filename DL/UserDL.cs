@@ -3069,5 +3069,34 @@ namespace DL
             }
             return objResponseData;
         }
+        
+        public ResponseData CheckSSO(string sso)
+        {
+            try
+            {
+
+                SqlParameter[] param = new SqlParameter[1];
+                param[0] = new SqlParameter("@ssoiD", sso);
+
+                DataSet ds = BaseFunction.FillDataSet("[dbo].[USP_ADMIN_Check_SSOUser_Select]", param);
+                if (ds != null && ds.Tables != null)
+                {
+                    objResponseData.ResponseCode = "000";
+                    objResponseData.Message = ds.Tables[0].Rows[0]["Message"].ToString();
+                    objResponseData.statusCode = Convert.ToInt32(ds.Tables[0].Rows[0]["StatusCode"]);
+                }
+                else
+                {
+                    objResponseData.ResponseCode = "001";
+                    objResponseData.Message = "No Data Available...";
+                    objResponseData.statusCode = -1;
+                }
+            }
+            catch (Exception e)
+            {
+                ExceptionLogDL.SendExcepToDB(e, 0, "Class : AdminDL / Function : GetMenus", connectionString);
+            }
+            return objResponseData;
+        }
     }
 }
