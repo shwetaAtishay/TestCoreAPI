@@ -77,6 +77,8 @@ namespace BO.Models
         public string ServiceList { get; set; }
         public string HardwareList { get; set; }
         public string PaymentStatus { get; set; }
+        public string Role { get; set; }
+        public int iRoleId { get; set; }
         public int IsActive { get; set; }
     }
 

@@ -892,6 +892,8 @@ namespace DL
                         userDetails.PaymentStatus = ds.Tables[0].Rows[i]["PaymentStatus"].NulllToString();
                         userDetails.EmailId = ds.Tables[0].Rows[i]["sEmailId"].NulllToString();
                         userDetails.IsActive = ds.Tables[0].Rows[i]["IsActive"].NulllToInt();
+                        userDetails.Role = ds.Tables[0].Rows[i]["Role"].NulllToString();
+                        userDetails.iRoleId = ds.Tables[0].Rows[i]["iRoleId"].NulllToInt();
 
                         lstUserDetails.Add(userDetails);
                     }
