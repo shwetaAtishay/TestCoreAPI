@@ -338,5 +338,10 @@ namespace BL
         {
             return objUserDL.GetACDMCDataDelete(AcdmcId);
         }
+        
+        public ResponseData CheckSSO(string sso)
+        {
+            return objUserDL.CheckSSO(sso);
+        }
     }
 }

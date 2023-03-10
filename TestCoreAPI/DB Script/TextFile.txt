@@ -1,4 +1,63 @@
-﻿-- =============================================
+﻿____________________________________________________________________________________10.03.2023______________________________________________________________________________________
+ --========================================================================
+ --Author:<Vivek Choudhary>
+ --Create Date:<26.Sep.2022>
+ --Description:<This procedure is use to check SSO User exists or not>
+ --======================================================================
+Alter Procedure [dbo].[USP_ADMIN_Check_SSOUser_Select] --'Zapurse1'
+@ssoiD nvarchar(1000) = null
+as
+begin
+	if exists(select * from PRTYMST where sName = @ssoiD)
+	begin
+		select 0 as StatusCode, 'SSO Already Exists' as [Message]
+	end
+	else
+	begin
+			select 1 as StatusCode, 'SSO Details Not Found' as [Message]
+	end
+end
+GO
+-------------------------------------------------------------------------------------------------------------------------------------------------
+Update the Procedure "USP_ADMIN_GetMasterDataForDropdown_View" with following condition : MstDeptApplicationList
+
+if(@type='MstDeptApplicationList')
+begin
+select
+ T2.ipkMstID
+,T2.sApplID
+,T2.stypeID
+,T2.iFK_ClgID
+,clg.sNameOfClg as CollegeName
+,T2.iFK_DeptID
+,dept.sDeptName as Dept
+,T2.iFK_TrstID
+,trust.sName as Trust
+, STUFF((Select ', '+NOCCOUSTEMINFO.sName
+from (select MST_DeptAppl.ipkMstID,value from MST_DeptAppl cross apply string_split(stypeID,',')) T1
+inner join  NOCCOUSTEMINFO on T1.value=NOCCOUSTEMINFO.iNocCstId 
+where T1.ipkMstID = T2.ipkMstID
+FOR XML PATH('')),1,1,'')  stypeName
+,dtCrtdOn
+,dTotalFee
+,isnull(sum(hst.dPaidAMT),0) PaidAmnt
+,isnull(dTotalFee-sum(dPaidAMT),dTotalFee)  DueAMT
+from 
+MST_DeptAppl T2  
+inner join APLCTNBASICINFO clg on clg.iPk_ClgID = T2.iFK_ClgID
+left join DPETMST dept on dept.iPK_DeptId = T2.iFK_DeptID
+inner join TRSTINFO trust on trust.PK_TrstInfoId = T2.iFK_TrstID
+left join MST_PMTHSTRY hst on hst.sFK_ApplID = T2.sApplID
+where clg.iFk_TrstInfoId = @PartyId
+group by T2.ipkMstID,T2.sApplID,T2.stypeID,T2.iFK_ClgID,clg.sNameOfClg,T2.iFK_DeptID,dept.sDeptName,T2.iFK_TrstID,trust.sName,dtCrtdOn,
+dTotalFee
+order by T2.dtCrtdOn desc
+end
+
+
+
+___________________________________________________________________________________________________________________________________________________________________________________
+-- =============================================
 -- Author: <Vivek Choudhary>
 -- Create date: <29.Sep.2022>
 -- Description:	<This procedure is used to update the verification status for logged in user from login and security page ex : pan verify, aadhaar verify etc>
