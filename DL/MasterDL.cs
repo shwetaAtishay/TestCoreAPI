@@ -1183,7 +1183,7 @@ namespace DL
                         Dropdown obj = new Dropdown();
                         obj.Id = ds.Tables[0].Rows[i]["Id"].NulllToString();
                         obj.Text = ds.Tables[0].Rows[i]["text"].NulllToString();
-
+                        obj.ID1 = ds.Tables[0].Rows[i]["Type"].NulllToString();
 
                         objList.Add(obj);
 

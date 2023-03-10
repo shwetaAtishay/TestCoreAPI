@@ -1,0 +1,30 @@
+﻿USE [ServerNoc]
+GO
+/****** Object:  StoredProcedure [dbo].[Usp_Mst_Fee_DepartApplication_Data]    Script Date: 10-03-2023 11:48:20 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER Procedure [dbo].[Usp_Mst_Fee_DepartApplication_Data]
+(
+@Departid int=null,
+@ApplicationId int=0
+)
+as
+Begin
+
+
+if(@ApplicationId=0)
+Begin
+select distinct  M.iFk_NOCDeptId Id ,C1.sName  text,'' as Type from NOCDEPMAP M inner join NOCCOUSTEMINFO C1 on C1.iNocCstId=M.iFk_NOCDeptId and C1.iTypid=1  
+and C1.iStts!=2 left join NOCCOUSTEMINFO C2 on C2.iNocCstId=M.iFk_NOCTyp and C2.iTypid=2  
+and C2.iStts!=2 left join DPETMST D on D.iPK_DeptId=M.iFk_DeptId where M.iStts!=2 and (@Departid is null or M.iFk_DeptId=@Departid) 
+end
+else
+begin
+select distinct  M.iFk_NOCTyp Id ,C2.sName  text,(Case when M.iMode=1 then 'TNOC' when M.iMode=2 then 'PNOC' when M.iMode=3 then 'Both'  when M.iMode=4 then 'Extension TNOC' else '' end) as Type from NOCDEPMAP M inner join NOCCOUSTEMINFO C1 on C1.iNocCstId=M.iFk_NOCDeptId and C1.iTypid=1  
+and C1.iStts!=2 left join NOCCOUSTEMINFO C2 on C2.iNocCstId=M.iFk_NOCTyp and C2.iTypid=2  
+and C2.iStts!=2 left join DPETMST D on D.iPK_DeptId=M.iFk_DeptId where M.iStts!=2 and (@Departid is null or M.iFk_DeptId=@Departid) and M.iFk_NOCDeptId=@ApplicationId
+end
+End
+-------------------------------------------------------------------------------------------------------------------------------------------
