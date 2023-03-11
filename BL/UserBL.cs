@@ -343,5 +343,9 @@ namespace BL
         {
             return objUserDL.CheckSSO(sso);
         }
+        public ResponseData GetDegree()
+        {
+            return objUserDL.GetDegrees();
+        }
     }
 }

@@ -467,6 +467,21 @@ namespace TestCoreAPI.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("GetDegree")]
+        public ResponseData GetDegree()
+        {
+            try
+            {
+                var objResponseData = objAdminBL.GetDegree();
+                return objResponseData;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
     }
 
 }

@@ -28,3 +28,34 @@ and C2.iStts!=2 left join DPETMST D on D.iPK_DeptId=M.iFk_DeptId where M.iStts!=
 end
 End
 -------------------------------------------------------------------------------------------------------------------------------------------
+
+alter Procedure [dbo].[USP_MASTER_AddCourse_List]--- 22
+@TrustId int=0  
+As      
+Begin      
+ Begin Try  
+  
+ SELECT Cou.iPK_DeptId iPk_AddCourseId,TR.sName as TrustName,cl.sNameOfClg as CollageName,isnull(dept.sDeptName,'NA') as Deegree,Cou.iFK_CourseId,course.sName as Courses,Cou.Fk_StatusId,IsNull(STUFF((Select ','+CSTMENUM.sName      
+    from (select DEPTVSCURS.iPk_DeptId,value from DEPTVSCURS cross apply string_split(sSubjectDepart,',')) T1      
+    inner join CSTMENUM on T1.value=CSTMENUM.iPK_CustEnum      
+    where  T1.iPk_DeptId=Cou.iPk_DeptId      
+    FOR XML PATH('')),1,1,''),'NA') subjectlist,  
+    isnull(Cou.bIsPNOC,0) PNOC,isnull(Cou.bIsTNOC,0) TNOC,  
+    iFK_DeptId,cl.iPk_ClgID ClgId,  
+    Cou.sSubjectDepart Sublist  
+  
+  
+    from APLCTNBASICINFO CL inner join TRSTINFO TR   
+       ON TR.PK_TrstInfoId=CL.iFk_TrstInfoId  
+       left join DEPTVSCURS Cou on Cou.iFk_TrstInfoId=TR.PK_TrstInfoId and Cou. IPk_AplcnId=cl.iPk_ClgID  
+    left join DPETMST dept on dept.iPK_DeptId=Cou.iFK_DeptId  
+    left join CSTMENUM course on Cou.iFK_CourseId=course.iPK_CustEnum where  
+      Cou.iIsActive =1 and Cou.iFk_TrstInfoId=@TrustId  
+    order by cou.dtCreatedDt desc  
+     
+ END TRY       
+ begin catch         
+  EXEC [dbo].[USP_ADMIN_StoreProcedureErrorHandling_Save] 0,0,1 --To log Stored procedure errors      
+  select -1 as StatusCode, 'Check Error - ' + cast(ERROR_Number() as varchar) + ' ' + ERROR_MESSAGE () as [Message],'' AS Body      
+   end catch      
+End    
