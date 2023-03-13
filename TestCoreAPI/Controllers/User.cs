@@ -451,6 +451,36 @@ namespace TestCoreAPI.Controllers
                 throw ex;
             }
         }
+        
+        [HttpPost]
+        [Route("CheckSSO")]
+        public ResponseData CheckSSO(string sso)
+        {
+            try
+            {
+                var objResponseData = objAdminBL.CheckSSO(sso);
+                return objResponseData;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        [HttpPost]
+        [Route("GetDegree")]
+        public ResponseData GetDegree()
+        {
+            try
+            {
+                var objResponseData = objAdminBL.GetDegree();
+                return objResponseData;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
 
     }
 

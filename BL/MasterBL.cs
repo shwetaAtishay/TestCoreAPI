@@ -119,9 +119,9 @@ namespace BL
 
             return objMasterDL.SaveComment(Mst);
         }
-        public List<Dropdown> GetApplicationData(int Deptid, int ApplicationId)
+        public List<Dropdown> GetApplicationData(int Deptid, int ApplicationId,int NOCDeptId)
         {
-            return objMasterDL.GetApplicationData(Deptid, ApplicationId);
+            return objMasterDL.GetApplicationData(Deptid, ApplicationId, NOCDeptId);
         }
         public ResponseData InsertFee(CompleteFeeMaster Mst)
         {

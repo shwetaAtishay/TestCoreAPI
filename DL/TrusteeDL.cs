@@ -2040,6 +2040,7 @@ namespace DL
                         CustomList objdoc = new CustomList();
                         objdoc.Id = ds.Tables[0].Rows[i]["Id"].NulllToInt();
                         objdoc.text = ds.Tables[0].Rows[i]["CustomName"].NulllToString();
+                        objdoc.Name = ds.Tables[0].Rows[i]["Fk_StatusId"].NulllToString();
                         objListdoc.Add(objdoc);
                     }
                 }
