@@ -94,6 +94,24 @@ namespace BO.Models
             public string Authorized { get; set; }
             public string AuthorizedExtension { get; set; }
             public string AuthorizedContentType { get; set; }
+            
+            //Add new Param11 march
+            public string OccupationId { get; set; }
+            public string GenderId { get; set; }
+            public string FatherName { get; set; }
+            public string CollageId { get; set; }
+            public string Educationfile { get; set; }
+            public string EducationfileExtension { get; set; }
+            public string EducationfileContentType { get; set; }
+
+            public string Letterfile { get; set; }
+            public string LetterfileExtension { get; set; }
+            public string LetterfileContentType { get; set; }
+
+            public string signaturefile { get; set; }
+            public string signaturefileExtension { get; set; }
+            public string signaturefileContentType { get; set; }
+
         }
 
         public class CollageList : ErrorBO

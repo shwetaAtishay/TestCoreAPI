@@ -730,11 +730,11 @@ namespace TestCoreAPI.Controllers
 
         [HttpGet]
         [Route("GetApplicationData")]
-        public ResponseData GetApplicationData(int Deptid, int ApplicationId)
+        public ResponseData GetApplicationData(int Deptid, int ApplicationId ,int NOCDeptId)
         {
             ResponseData objResponseData = new ResponseData();
             List<Dropdown> ListRequest = new List<Dropdown>();
-            ListRequest = _MasterBL.GetApplicationData(Deptid, ApplicationId);
+            ListRequest = _MasterBL.GetApplicationData(Deptid, ApplicationId, NOCDeptId);
             //string raw = JObject.FromObject(new { ListRequest }).ToString();
             //raw = EncryptDecrypt.EncryptRaw(raw);
             if (ListRequest != null)
