@@ -62,6 +62,9 @@ namespace BO.Models
         public string NocDepartmentName { get; set; }
         public string NocDepartmenttype { get; set; }
         public string DepartName { get; set; }
+        public int? NocSpecialId { get; set; }
+        public string iFk_NocSpecialId { get; set; }
+        public int? iSpecialStatus { get; set; }
     }
     public class PARAMCAT
     {
