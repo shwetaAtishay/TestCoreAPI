@@ -86,6 +86,10 @@ namespace BL
         {
             return objUserDL.DeleteApplicantDetail(obj);
         }
+        public ResponseData DeleteMergerApplicantion(AmendmentBO obj)
+        {
+            return objUserDL.DeleteMerger(obj);
+        }
         #endregion 
     }
 }
