@@ -1258,7 +1258,7 @@ namespace DL
                         //objResponseData.Message = DT.Rows[0]["Message"].ToString();
                         foreach (var item in Mst.feeTrn)
                         {
-                            SqlParameter[] param1 = new SqlParameter[8];
+                            SqlParameter[] param1 = new SqlParameter[10];
 
                             param1[0] = new SqlParameter("@iPK_id", '0');
                             param1[1] = new SqlParameter("@iFk_DeptID", item.iFk_DeptID);
@@ -1268,7 +1268,8 @@ namespace DL
                             param1[5] = new SqlParameter("@dCharges", item.dCharges);
                             param1[6] = new SqlParameter("@iFk_FeeMstId", objResponseData.statusCode);
                             param1[7] = new SqlParameter("@sGuidid", item.sGuidid);
-
+                            param1[8] = new SqlParameter("@iCaseId", item.CaseId);
+                            param1[9] = new SqlParameter("@itype", item.type);
 
                             DataTable DT1 = BaseFunction.FillDataTable("[dbo].[Usp_Admin_InsertFeeTRN]", param1);
                         }
@@ -1680,6 +1681,9 @@ namespace DL
                         obj.FormName = ds.Tables[0].Rows[i]["FormName"].NulllToString();
                         obj.dCharges = ds.Tables[0].Rows[i]["dCharges"].NulllToDecimal();
                         obj.iFK_AppTypID = ds.Tables[0].Rows[i]["iFK_AppTypID"].NulllToInt();
+                        obj.CaseId = ds.Tables[0].Rows[i]["CaseId"].NulllToInt();
+                        obj.Casetext = ds.Tables[0].Rows[i]["Casetext"].NulllToString();
+                        obj.type = ds.Tables[0].Rows[i]["type"].NulllToString();
                         objList.Add(obj);
 
                     }
