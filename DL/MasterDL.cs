@@ -23,13 +23,16 @@ namespace DL
         {
             try
             {
-                SqlParameter[] param = new SqlParameter[6];
+                //NOCDEPMAP
+                SqlParameter[] param = new SqlParameter[8];
                 param[0] = new SqlParameter("@iPk_DeptMapId", obj.iPk_DeptMapId);
                 param[1] = new SqlParameter("@iFk_DeptId", obj.iFk_DeptId);
                 param[2] = new SqlParameter("@iFk_NOCDeptId", obj.iFk_NOCDeptId);
                 param[3] = new SqlParameter("@iFk_NOCTyp", obj.iFk_NOCTyp);
                 param[4] = new SqlParameter("@iStts", obj.iStts);
                 param[5] = new SqlParameter("@iMode", obj.iMode);
+                param[6] = new SqlParameter("@iFk_NocSpecialId", obj.iFk_NocSpecialId);
+                param[7] = new SqlParameter("@iSpecialStatus", obj.iSpecialStatus);
                 DataTable DT = BaseFunction.FillDataTable("[dbo].[Usp_Mst_NOC_DepartMapping]", param);
                 if (DT != null)
                 {
@@ -202,6 +205,9 @@ namespace DL
                         obj.iStts = ds.Tables[0].Rows[i]["iStts"].NulllToInt();
                         obj.NocDepartmentName = ds.Tables[0].Rows[i]["NocDepartmentName"].NulllToString();
                         obj.NocDepartmenttype = ds.Tables[0].Rows[i]["NocDepartmenttype"].NulllToString();
+                        obj.NocSpecialId = ds.Tables[0].Rows[i]["iFk_NocSpecialId"].NulllToInt();
+                        obj.iSpecialStatus = ds.Tables[0].Rows[i]["iSpecialStatus"].NulllToInt();
+                        obj.iFk_NocSpecialId = ds.Tables[0].Rows[i]["NocSpecialName"].NulllToString();
                         objList.Add(obj);
 
                     }
@@ -1158,20 +1164,31 @@ namespace DL
             }
             return objResponseData;
         }
-        public List<Dropdown> GetApplicationData(int Deptid, int ApplicationId)
+        public List<Dropdown> GetApplicationData(int Deptid, int ApplicationId, int NOCDeptId)
         {
             List<Dropdown> objList = new List<Dropdown>();
             try
             {
                 DataSet ds = new DataSet();
+                if (NOCDeptId != 0)
+                {
+                    SqlParameter[] param = new SqlParameter[3];
 
-                SqlParameter[] param = new SqlParameter[2];
+                    param[0] = new SqlParameter("@Departid", Deptid);
+                    param[1] = new SqlParameter("@ApplicationId", ApplicationId);
+                    param[2] = new SqlParameter("@NOCDeptId", NOCDeptId);
+                    ds = BaseFunction.FillDataSet("[dbo].[Usp_Mst_Fee_DepartApplication_Data]", param);
+                }
+                else
+                {
+                    SqlParameter[] param = new SqlParameter[2];
 
-                param[0] = new SqlParameter("@Departid", Deptid);
-                param[1] = new SqlParameter("@ApplicationId", ApplicationId);
+                    param[0] = new SqlParameter("@Departid", Deptid);
+                    param[1] = new SqlParameter("@ApplicationId", ApplicationId);
+                    ds = BaseFunction.FillDataSet("[dbo].[Usp_Mst_Fee_DepartApplication_Data]", param);
+                }
 
-
-                ds = BaseFunction.FillDataSet("[dbo].[Usp_Mst_Fee_DepartApplication_Data]", param);
+               
 
                 if (ds != null && ds.Tables != null && ds.Tables[0].Rows.Count > 0)
                 {

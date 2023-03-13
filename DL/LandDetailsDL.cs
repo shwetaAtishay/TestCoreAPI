@@ -251,7 +251,7 @@ namespace DL
             try
             {
 
-                SqlParameter[] param = new SqlParameter[19];
+                SqlParameter[] param = new SqlParameter[22];
                 param[0] = new SqlParameter("@sAppGUID", _obj.sAppGUID);
                 param[1] = new SqlParameter("@sBldgntyp", _obj.sBldgntyp);
                 param[2] = new SqlParameter("@sOrdNo", _obj.sOrdNo);
@@ -271,6 +271,9 @@ namespace DL
                 param[16] = new SqlParameter("@BRightImg", _obj.BRightImg);
                 param[17] = new SqlParameter("@BOtherImg", _obj.BOtherImg);
                 param[18] = new SqlParameter("@dtCrtdBy", _obj.dtCrtdBy);
+                param[19] = new SqlParameter("@RentOrderNo", _obj.rentedOrderNo);
+                param[20] = new SqlParameter("@RentCertificateDoc", _obj.rentedCertificateDoc);
+                param[21] = new SqlParameter("@PwdOrderNo", _obj.sPWDOrderNo);
 
                 ds = BaseFunction.FillDataSet("[dbo].[USP_ADMIN_AddBuildingDetails_Insert]", param);
                 if (ds != null && ds.Tables != null && ds.Tables.Count > 0)

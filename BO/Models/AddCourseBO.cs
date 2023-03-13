@@ -31,6 +31,7 @@ namespace BO.Models
         public int? TNOC { get; set; }
         public int? ClgId { get; set; }
         public string Sublist { get; set; }
+        public int? Fk_StatusId { get; set; }
         //public int? iPk_AplcnId { get; set; }
         //public int? iPk_AddCourseId { get; set; }
         //public int? iPK_SubId { get; set; } 
