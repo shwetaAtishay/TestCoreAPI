@@ -1,90 +1,4 @@
-﻿----Anil ----
-
-
-Create proc [dbo].[USP_Master_Degrees_List]
-as
-begin
-
-select iPK_CustEnum Id,sName Text from CSTMENUM where iFK_EnumNo=46 and iIsActv=1
-
-end
-
-
----------------------------------
-
-ALTER proc [dbo].[USP_Master_Course_List]
-(
-@Id int=null
-)
-as
-begin
-if(@Id=50)
-begin
- select iId [ID],sName [Text] from CSTMENUM
- where iFK_EnumNo=@Id  and iIsActv=1
-End
-else
-Begin
-select cst.iPK_CustEnum [Id],cst.sName [Text] 
-from  
-CSTMENUM cst 
-left join DEPTCOURSEMAP dpt
-on dpt.Fk_CourseId=cst.iPK_CustEnum  
-where  cst.iPK_CustEnum  not in (select distinct s.Fk_CourseId
-from  DEPTCOURSEMAP s ) and cst.iFK_EnumNo=@Id order by cst.iPK_CustEnum
- 
-end
-End
-
----------------------------------------------------------------------------------------
-
-
-DEPTCOURSEMAP table me column Name Update Karne Hai===>  sDegree 
-
------------------------------------------------------------------------------
-ALTER proc [dbo].[USP_Master_DeptCourseMapping_Get]
-as
-begin
-select   m.pk_MapId,m.fk_DeptId deptId,m.Fk_CourseId courseId,d.sDeptName Department,c.sName Course,s.sName [Subject],m.sDegree as Degree from DEPTCOURSEMAP m
-inner join DPETMST d on d.iPK_DeptId=m.fk_DeptId
-inner join CSTMENUM c on c.iPK_CustEnum=m.Fk_CourseId and  c.iFK_EnumNo=30 and c.iIsActv=1
-inner join CSTMENUM s on s.iPK_CustEnum=m.Fk_SubjectId and  s.iFK_EnumNo=43 and s.iIsActv=1
-order by  1 desc
-end
-
-------------------------------------------------------------------------------------
-----CSTMENUM--- INSERT Script---------------
-
-INSERT [dbo].[CSTMENUM] ([iPK_CustEnum], [iFK_EnumNo], [sName], [sCrtdBy], [dtCrtdDt], [sUpdtBy], [dtUpdtOn], [sPrtyId], [iId], [iIsActv], [sTyp]) VALUES (11547, 46, N'UG', NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, NULL, 1, NULL)
-INSERT [dbo].[CSTMENUM] ([iPK_CustEnum], [iFK_EnumNo], [sName], [sCrtdBy], [dtCrtdDt], [sUpdtBy], [dtUpdtOn], [sPrtyId], [iId], [iIsActv], [sTyp]) VALUES (11548, 46, N'Dual Degree(UG+PG)', NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, NULL, 1, NULL)
-INSERT [dbo].[CSTMENUM] ([iPK_CustEnum], [iFK_EnumNo], [sName], [sCrtdBy], [dtCrtdDt], [sUpdtBy], [dtUpdtOn], [sPrtyId], [iId], [iIsActv], [sTyp]) VALUES (11549, 46, N'Integrated', NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, NULL, 1, NULL)
-INSERT [dbo].[CSTMENUM] ([iPK_CustEnum], [iFK_EnumNo], [sName], [sCrtdBy], [dtCrtdDt], [sUpdtBy], [dtUpdtOn], [sPrtyId], [iId], [iIsActv], [sTyp]) VALUES (11550, 46, N'Diploma', NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, NULL, 1, NULL)
-INSERT [dbo].[CSTMENUM] ([iPK_CustEnum], [iFK_EnumNo], [sName], [sCrtdBy], [dtCrtdDt], [sUpdtBy], [dtUpdtOn], [sPrtyId], [iId], [iIsActv], [sTyp]) VALUES (11551, 46, N'Doctoral', NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, NULL, 1, NULL)
-INSERT [dbo].[CSTMENUM] ([iPK_CustEnum], [iFK_EnumNo], [sName], [sCrtdBy], [dtCrtdDt], [sUpdtBy], [dtUpdtOn], [sPrtyId], [iId], [iIsActv], [sTyp]) VALUES (11552, 46, N'Certificate', NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, NULL, 1, NULL)
-INSERT [dbo].[CSTMENUM] ([iPK_CustEnum], [iFK_EnumNo], [sName], [sCrtdBy], [dtCrtdDt], [sUpdtBy], [dtUpdtOn], [sPrtyId], [iId], [iIsActv], [sTyp]) VALUES (11553, 46, N'PG', NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, NULL, 1, NULL)
-
----------------------------------------------------
-
-ALTER proc [dbo].[USP_ADMIN_DeptCourseMap_Save]
-@Fk_DeptId int,
-@Fk_CourseId int,
-@Fk_SubjectId int,
-@iClassId int,
-@sDegree varchar(100)
-as
-begin
-update CSTMENUM set  iId=@iClassId where iPK_CustEnum=@Fk_CourseId
-insert into DEPTCOURSEMAP
-values(@Fk_DeptId,@Fk_CourseId,@Fk_SubjectId,@sDegree)
-select @@IDENTITY
-end
-
------------------------------------------
-
-
-// 13-3-2022 Management Committee
-
-ALTER PROCEDURE [dbo].[USP_ADMIN_Trustee_SaveView] --'Details'
+﻿ALTER PROCEDURE [dbo].[USP_ADMIN_Trustee_SaveView] --'Details'
 (
 @Type VARCHAR(200),
 @IdentityId int=null,
@@ -130,6 +44,14 @@ AS
 BEGIN  
  BEGIN TRY 
  IF(@Type='Insert')  
+
+ IF EXISTS (SELECT * FROM TRSTDEPT WHERE iFk_TrstInfoId = @TrustInfoId and sCollageId=@CollageId and iIsPrimary=@isPrimary)
+BEGIN 
+	select 1 as [Flag] , 'Alreday exists iIsPrimary' as [Message]	  
+END
+ELSE
+
+
   BEGIN 
         declare @Id int,
 				@AadhaarDocumenttype int,
@@ -228,10 +150,12 @@ BEGIN
 
         SELECT tr.PK_TrstDetId as Id,sPrsnName [Name],
 		tfo.sName TrustName,tr.sFatherName FatherName,tr.sGenderId GenderId,bi.sNameOfClg CollageId,cst.sName OccupationId, 
-		CASE WHEN iFk_RoleId=1099 THEN 'Prasedent' 
-		     WHEN iFk_RoleId=1098 THEN 'Chairman'
-			 WHEN iFk_RoleId=1097 THEN 'Directer'
-			 WHEN iFk_RoleId=1096 THEN 'Managing Directer' END
+		CASE WHEN iFk_RoleId=1099 THEN 'Staff Members'
+			 WHEN iFk_RoleId=11574 THEN 'Student Representative' 
+			 WHEN iFk_RoleId=11575 THEN 'others'
+		     WHEN iFk_RoleId=1098 THEN 'Treasurer'
+			 WHEN iFk_RoleId=1097 THEN 'Secretary'
+			 WHEN iFk_RoleId=1096 THEN 'President' END
 			 [Role],tr.sMobileNo AS Mobile,tr.sEmailId Email,
 		ad.iPk_AplcnAttch Aadhaar,
 		case when LEN(tr.AadhaarNo) = 12 then CONCAT(substring (tr.AadhaarNo,1,4),'-XXXX-', substring (tr.AadhaarNo,9,12))
@@ -286,43 +210,5 @@ END Try
     SELECT 5 AS [Flag],'Error has occurred!' AS [Message],Null as PartyId   
  END CATCH     
 END
--------------------------------------------------------------------
 
-ALTER Procedure [dbo].[USP_ADMIN_CustomFieldsByEnumNo_View]  
-(  
-@EnumNo Int  
-)  
-AS   
-BEGIN  
- BEGIN TRY  
- IF(@EnumNo>0)  
-   if(@EnumNo=37)  
-   Begin  
-    SELECT iId Id,sName CustomName,iId  from CSTMENUM where iFK_EnumNo=37 and ISNULL(iIsActv,1)=1  
-   End  
-   else if(@EnumNo=49)
-   Begin
-   Select iPK_CustEnum Id,sName CustomName from CSTMENUM where iFK_EnumNo=49 and ISNULL(iIsActv,1)=1  
-   End
-   else  
- BEGIN  
-   
-  SELECT iPK_CustEnum Id,sName CustomName  from CSTMENUM where iFK_EnumNo=29 and ISNULL(iIsActv,1)=1  
- END  
- ELSE  
- BEGIN  
-  SELECT iPK_CatId Id,sName CustomName from SRVCMST where ISNULL(iIsActv,1)=1  
- END  
- END TRY   
- BEGIN CATCH     
- INSERT INTO dbo.EXCPTNLOG(sExcptnMsg,bStoredProcdurExcptn,sExcptnSource,sExcptnUrl,iLogDt,bIsActv)  
- VALUES ('[dbo].[USP_ADMIN_CustomFieldsByEnumNo_View]','StoredProcedure','Error At Line No '+cast(ERROR_LINE() AS varchar) + ' ' + ''+cast(ERROR_Number() AS varchar) + ' ' + ERROR_MESSAGE (),null,GETDATE(),1)    
-  SELECT -1 as StatusCode, 'Check Error - ' + cast(ERROR_Number() as varchar) + ' ' + ERROR_MESSAGE () as [Message],'' AS Body  
- END CATCH  
-End  
-------------------------------------------
-
-
-
-
-
+-----------------------------------Update-------------------------------
