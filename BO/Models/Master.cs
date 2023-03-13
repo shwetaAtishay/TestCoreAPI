@@ -191,6 +191,7 @@ namespace BO.Models
     {
         public string DepartmentName { get; set; }
         public string ApplicationType { get; set; }
+        public string Casetext { get; set; }
     }
     public class FeeTRN : FeeMstField
     {
@@ -202,6 +203,8 @@ namespace BO.Models
         public decimal dCharges { get; set; }
         public string sGuidid { get; set; }
         public string FormName { get; set; }
+        public int CaseId { get; set; }
+        public string type { get; set; }
     }
     public class FeeMst : FeeMstField
     {
