@@ -2450,5 +2450,50 @@ namespace DL
                 return _result;
             }
         }
+        
+        public ResponseData CheckDraftValidationForEntry(int clgID, string courses, string subjects)
+        {
+           
+            DataSet ds = new DataSet();
+            try
+            {
+                SqlParameter[] param = new SqlParameter[3];
+                param[0] = new SqlParameter("@courseID", courses);
+                param[1] = new SqlParameter("@subjectID", subjects);
+                param[2] = new SqlParameter("@clg", clgID);
+                ds = BaseFunction.FillDataSet("[dbo].[USP_ADMIN_CheckValidateDraftEntry_select]", param);
+                if (ds != null && ds.Tables != null && ds.Tables.Count > 0)
+                {
+                    if (ds.Tables[0].Rows.Count > 0)
+                    {
+                        objResponseData1.statusCode = ds.Tables[0].Rows[0]["allow"].NulllToInt();
+                        objResponseData1.Message = ds.Tables[0].Rows[0]["Courses"].NulllToString();
+                        objResponseData1.ResponseCode = ds.Tables[0].Rows[0]["Subjects"].NulllToString();
+
+                    }
+                    else
+                    {
+                        objResponseData1.statusCode = ds.Tables[0].Rows[0]["allow"].NulllToInt();
+                        objResponseData1.Message = ds.Tables[0].Rows[0]["Courses"].NulllToString();
+                        objResponseData1.ResponseCode = ds.Tables[0].Rows[0]["Subjects"].NulllToString();
+                    }
+                }
+                else
+                {
+                    objResponseData1.statusCode = 0;
+                    objResponseData1.Message = CustomMessage.NORECORDFOUND;
+                    objResponseData1.ResponseCode = CustomMessage.NORECORDFOUND_RESPONSECODE.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                objResponseData1.statusCode = 0;
+                objResponseData1.Message = CustomMessage.EXCEPTIONOCCURRED;
+                objResponseData1.ResponseCode = CustomMessage.EXCEPTIONOCCURRED_RESPONSECODE.ToString();
+                //ExceptionLogDL.WriteExceptionDB(ex, "NA", "api", "TrusteeDL:DocumentDetail", "UNOCapi", "NA");
+            }
+
+            return objResponseData1;
+        }
     }
 }
