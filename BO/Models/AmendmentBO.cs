@@ -6,13 +6,13 @@ namespace BO.Models
 {
     public class AmendmentBO
     {
-        public string ImageTypeName { get; set; }
+        public String sName { get; set; }
         public String iPk_AplcnAttch { get; set; }
         public String trusID { get; set; }
         public int? id { get; set; }
         public int? idclgID { get; set; }
         public int? CollegeId { get; set; }
-        public string iCollegeId  { get; set; }
+        public string iCollegeId { get; set; }
         public string sSSOID { get; set; }
         public string UserBy { get; set; }
         public string ConsentofManagement { get; set; }
@@ -103,7 +103,7 @@ namespace BO.Models
 
         //land details
         public string LandCertificate { get; set; }
-        public string LandCertificateExtension { get; }
+        public string LandCertificateExtension { get; set; }
         public string LandCertificatetype { get; set; }
 
         //BluePrintBuilding
@@ -133,5 +133,22 @@ namespace BO.Models
         public string sAddreslineoneNew { get; set; }
         public string sAddresslinetwoold { get; set; }
         public string sAddresslinetwoNew { get; set; }
+
+        public string ImageTypeName { get; set; }
+
+
+        public string SocietyMergertype { get; set; }
+        public string NOCsissuedtype { get; set; }
+        public string LstUnivsityAffiliationColtype { get; set; }
+        public string AAAffidavitconsenttype { get; set; }
+        public string PAffidavitParentstype { get; set; }
+        public string AllNOCsIssuedtype { get; set; }
+        public string UniversityAffilliationType { get; set; }
+        public string NOCAffiliattingTyp { get; set; }
+        public string AffidavitConsentParentsTyp { get; set; }
+        public string LandCertificateTyp { get; set; }
+        public string BluePrintBuildingTyp { get; set; }
+        public string StaffInformationTyp { get; set; }
+
     }
 }
