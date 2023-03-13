@@ -488,7 +488,7 @@ namespace DL
         }
         //ManagementCollegeList
         public List<AmendmentBO> ManagementCollegeList(int idclgID)
-       {
+        {
             List<AmendmentBO> _result = new List<AmendmentBO>();
             DataSet ds = new DataSet();
             try
@@ -513,7 +513,7 @@ namespace DL
                                 docFile = DR["docFile"].NulllToString(),
                                 DocumentContent = DR["DocumentContent"].NulllToString(),
                                 DocumentExtension = DR["DocumentExtension"].NulllToString(),
-                                //ImageTypeName = DR["sName"].NulllToString(),
+                                ImageTypeName = DR["sName"].NulllToString(),
                             });
                         }
                         return _result;
@@ -547,9 +547,10 @@ namespace DL
             try
             {
                 SqlParameter[] param = new SqlParameter[2];
-                param[0] = new SqlParameter("@Type", "GetdetailsMergerDetails");
+                param[0] = new SqlParameter("@Type", "Details");
                 param[1] = new SqlParameter("@idclgID", idclgID);
-                ds = BaseFunction.FillDataSet("[dbo].[USP_GetAmendmentDetails]", param);
+                ds = BaseFunction.FillDataSet("[dbo].[USP_MergerApplicantInformatio_Save]", param);
+                //ds = BaseFunction.FillDataSet("[dbo].[USP_GetAmendmentDetails]", param);
                 if (ds != null && ds.Tables != null && ds.Tables.Count > 0)
                 {
                     if (ds.Tables[0].Rows.Count > 0)
@@ -558,14 +559,27 @@ namespace DL
                         {
                             _result.Add(new AmendmentBO
                             {
-                                iPk_AplcnAttch = DR["iPk_AplcnAttch"].NulllToString(),
+                                //iPk_AplcnAttch = DR["iPk_AplcnAttch"].NulllToString(),
                                 iPk_ClgAmdId = DR["iPk_ClgAmdId"].NulllToString(),
-                                stypeId = DR["stypeId"].NulllToString(),
                                 sNameOfClg = DR["sNameOfClg"].NulllToString(),
-                                iCollegeId = DR["iCollegeId"].NulllToString(),
-                                docFile = DR["docFile"].NulllToString(),
-                                DocumentContent = DR["DocumentContent"].NulllToString(),
-                                DocumentExtension = DR["DocumentExtension"].NulllToString()
+                                SocietyMergertype = DR["ProposalSocietyMergertype"].NulllToString(),
+                                NOCsissuedtype = DR["NOCsissuedtype"].NulllToString(),
+                                LstUnivsityAffiliationColtype = DR["LstUnivsityAffiliationColtype"].NulllToString(),
+                                AAAffidavitconsenttype = DR["AAAffidavitconsenttype"].NulllToString(),
+                                PAffidavitParentstype = DR["PAffidavitParentstype"].NulllToString(),
+                                AllNOCsIssuedtype = DR["AllNOCsIssuedtype"].NulllToString(),
+                                UniversityAffilliationType = DR["UniversityAffilliationType"].NulllToString(),
+                                NOCAffiliattingTyp = DR["NOCAffiliattingTyp"].NulllToString(),
+                                AffidavitConsentParentsTyp = DR["AffidavitConsentParentsTyp"].NulllToString(),
+                                LandCertificateTyp = DR["LandCertificateTyp"].NulllToString(),
+                                BluePrintBuildingTyp = DR["BluePrintBuildingTyp"].NulllToString(),
+                                StaffInformationTyp = DR["StaffInformationTyp"].NulllToString(),
+
+                                //iCollegeId = DR["iCollegeId"].NulllToString(),
+                                //docFile = DR["docFile"].NulllToString(),
+                                //DocumentContent = DR["DocumentContent"].NulllToString(),
+                                //DocumentExtension = DR["DocumentExtension"].NulllToString(),
+                                //sName = DR["sName"].NulllToString()
                             });
                         }
                         return _result;
@@ -850,7 +864,7 @@ namespace DL
                 param[1] = new SqlParameter("@Id", obj.CollegeId);
                 param[2] = new SqlParameter("@idclgID", obj.iCollegeId);
                 DataSet ds = BaseFunction.FillDataSet("[dbo].[USP_GetAmendmentDetails]", param);
-               
+
                 if (ds != null && ds.Tables != null && ds.Tables.Count > 0)
                 {
                     if (ds.Tables[0].Rows.Count > 0)
@@ -876,6 +890,45 @@ namespace DL
             catch (Exception e)
             {
                 ExceptionLogDL.SendExcepToDB(e, 0, "Class : UploadDocumentDL / Function : GetCategoryAllInformation", connectionString);
+            }
+            return objResponseData;
+        }
+        public ResponseData DeleteMerger(AmendmentBO obj)
+        {
+            try
+            {
+                List<AmendmentBO> DocumentDetailsList = new List<AmendmentBO>();
+                SqlParameter[] param = new SqlParameter[2];
+                param[0] = new SqlParameter("@Type", "UpdateMerger");
+                param[1] = new SqlParameter("@Id", obj.CollegeId);
+                //param[2] = new SqlParameter("@idclgID", obj.iCollegeId);
+                DataSet ds = BaseFunction.FillDataSet("[dbo].[USP_GetAmendmentDetails]", param);
+
+                if (ds != null && ds.Tables != null && ds.Tables.Count > 0)
+                {
+                    if (ds.Tables[0].Rows.Count > 0)
+                    {
+                        objResponseData.Message = ds.Tables[0].Rows[0]["Message"].NulllToString();
+                        objResponseData.statusCode = ds.Tables[0].Rows[0]["StatusCode"].NulllToInt();
+                        return objResponseData;
+                    }
+                    else
+                    {
+                        objResponseData.Message = ds.Tables[0].Rows[0]["Message"].NulllToString();
+                        objResponseData.statusCode = ds.Tables[0].Rows[0]["statusCode"].NulllToInt();
+                        return objResponseData;
+                    }
+                }
+                else
+                {
+                    objResponseData.Message = CustomMessage.NORECORDFOUND;
+                    objResponseData.ResponseCode = CustomMessage.NORECORDFOUND_RESPONSECODE.ToString();
+                    return objResponseData;
+                }
+            }
+            catch (Exception e)
+            {
+                ExceptionLogDL.SendExcepToDB(e, 0, "Class : UploadDocumentDL / Function : DeleteMergerDetails", connectionString);
             }
             return objResponseData;
         }

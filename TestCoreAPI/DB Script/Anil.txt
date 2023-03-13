@@ -82,6 +82,246 @@ end
 -----------------------------------------
 
 
+// 13-3-2022 Management Committee
+
+ALTER PROCEDURE [dbo].[USP_ADMIN_Trustee_SaveView] --'Details'
+(
+@Type VARCHAR(200),
+@IdentityId int=null,
+@Name VARCHAR(200)=null,
+@Email NVARCHAR(100)=null,
+@Mobile nvarchar(100)=null,
+@RoleId nvarchar(100)=null,
+@Aadhaar nvarchar(max)=null,
+@Pan nvarchar(max)=null,
+@Profile nvarchar(max)=null,
+@AadharExtension nvarchar(200)=null,
+@AadharDocumentContent nvarchar(200)=null,
+@PanExtension nvarchar(200)=null,
+@PanDocumentContent nvarchar(200)=null,
+@ProfileExtension nvarchar(200)=null,
+@ProfileDocumentContent nvarchar(200)=null,
+@AadhaarNo nvarchar(100)=null,
+@PanNo nvarchar(100)=null,
+@TrustInfoId nvarchar(10)=null,
+@isPrimary int = null,
+@isAuthorize int = null,
+@AuthorizedExtension nvarchar(200)=null,
+@AuthorizedDocumentContent nvarchar(200)=null,
+@Authorized nvarchar(max)=null,
+@OccupationId  nvarchar(50)=null,
+@GenderId  nvarchar(50)=null,
+@FatherName  nvarchar(50)=null,
+@CollageId nvarchar(50)=null,
+
+@Educationfile nvarchar(max)=null,
+@EducationfileExtension nvarchar(200)=null,
+@EducationfileContentType nvarchar(200)=null,
+
+@signaturefile nvarchar(max)=null,
+@signaturefileExtension nvarchar(200)=null,
+@signaturefileContentType nvarchar(200)=null,
+
+@Letterfile nvarchar(max)=null,
+@LetterfileExtension nvarchar(200)=null,
+@LetterfileContentType nvarchar(200)=null
+)
+AS 
+BEGIN  
+ BEGIN TRY 
+ IF(@Type='Insert')  
+  BEGIN 
+        declare @Id int,
+				@AadhaarDocumenttype int,
+				@PanDocumenttype int,
+				@ProfileDocumenttype int,
+				@AuthroziedDocType int,
+				@SignaturePicType int,
+				@EducationProofType int,
+				@ConsentLetterType int
+
+        set @AadhaarDocumenttype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=32 and sName='Aadhaar')
+		set @PanDocumenttype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=32 and sName='Pan')
+		set @ProfileDocumenttype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=32 and sName='Profile Photo')
+		set @AuthroziedDocType =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=32 and sName='Authorized Document')
+
+		set @SignaturePicType =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=32 and sName='SignaturePicDocument') 
+		set @EducationProofType =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=32 and sName='EducationProofDocument')   
+		set @ConsentLetterType =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=32 and sName='ConsentLetterDocument') 
+
+
+		
+
+        INSERT INTO TRSTDEPT(iFk_AplcnId,sPrsnName,iFk_RoleId,sMobileNo,sEmailId,AadhaarNo,PanNo,iFk_TrstInfoId,iIsPrimary,iIsAuthorize,sOccupationId,sGenderId,sFatherName,sCollageId)
+		VALUES(0,@Name,@RoleId,@Mobile,@Email,@AadhaarNo,@PanNo,@TrustInfoId,@isPrimary,@isAuthorize,@OccupationId,@GenderId,@FatherName,@CollageId) 
+		--return @@identity 		
+		--SET @Id = @@identity 
+		
+		SELECT @Id=@@IDENTITY
+
+		--print @Id
+
+		if(@Aadhaar <> '')
+		begin
+		--Aadhar
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES (0,@Id,'Trustee',CAST(@Aadhaar AS VARBINARY(max)),@AadhaarDocumenttype,1,GETDATE(),@AadharExtension,@AadharDocumentContent)
+		end
+
+		if(@Pan <> '')
+		begin
+		--Pan
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES (0,@Id,'Trustee',CAST(@Pan AS VARBINARY(max)),@PanDocumenttype,1,GETDATE(),@PanExtension,@PanDocumentContent)
+		end
+
+		if(@Profile <> '')
+		begin
+		--Profile
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES (0,@Id,'Trustee',CAST(@Profile AS VARBINARY(max)),@ProfileDocumenttype,1,GETDATE(),@ProfileExtension,@ProfileDocumentContent)
+		end
+
+		if(@Authorized <> '')
+		BEGIN
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES (0,@Id,'Trustee',CAST(@Authorized AS VARBINARY(max)),@AuthroziedDocType,1,GETDATE(),@AuthorizedExtension,@AuthorizedDocumentContent)
+		END
+
+		if(@Educationfile <> '')
+		begin
+		--Education image
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES (0,@Id,'Trustee',CAST(@Educationfile AS VARBINARY(max)),@EducationProofType,1,GETDATE(),@EducationfileExtension,@EducationfileContentType)
+		end
+
+		if(@signaturefile <> '')
+		begin
+		--signaturefile
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES (0,@Id,'Trustee',CAST(@signaturefile AS VARBINARY(max)),@SignaturePicType,1,GETDATE(),@signaturefileExtension,@signaturefileContentType)
+		end
+
+		if(@Letterfile <> '')
+		begin
+		--Consen Letterfile 
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES (0,@Id,'Trustee',CAST(@Letterfile AS VARBINARY(max)),@ConsentLetterType,1,GETDATE(),@LetterfileExtension,@LetterfileContentType)
+		end
+
+        SELECT 1 AS [Flag] , 'Success' AS [Message]  
+ END 
+  IF(@Type='Details')  
+  BEGIN 
+      --SELECT * FROM  APLCTNATTCH pr WHERE pr.iFk_AplcndetId=5 AND sFormName='Trustee' and pr.iDocTyp=1104
+       --select * from CSTMENUM
+
+
+        set @AadhaarDocumenttype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=32 and sName='Aadhaar')
+		set @PanDocumenttype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=32 and sName='Pan')
+		set @ProfileDocumenttype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=32 and sName='Profile Photo')
+		set @AuthroziedDocType =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=32 and sName='Authorized Document')
+		set @SignaturePicType =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=32 and sName='SignaturePicDocument') 
+		set @EducationProofType =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=32 and sName='EducationProofDocument')   
+		set @ConsentLetterType =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=32 and sName='ConsentLetterDocument') 
+
+
+        SELECT tr.PK_TrstDetId as Id,sPrsnName [Name],
+		tfo.sName TrustName,tr.sFatherName FatherName,tr.sGenderId GenderId,bi.sNameOfClg CollageId,cst.sName OccupationId, 
+		CASE WHEN iFk_RoleId=1099 THEN 'Prasedent' 
+		     WHEN iFk_RoleId=1098 THEN 'Chairman'
+			 WHEN iFk_RoleId=1097 THEN 'Directer'
+			 WHEN iFk_RoleId=1096 THEN 'Managing Directer' END
+			 [Role],tr.sMobileNo AS Mobile,tr.sEmailId Email,
+		ad.iPk_AplcnAttch Aadhaar,
+		case when LEN(tr.AadhaarNo) = 12 then CONCAT(substring (tr.AadhaarNo,1,4),'-XXXX-', substring (tr.AadhaarNo,9,12))
+		     else tr.AadhaarNo
+			 end
+	AadhaarNo
+		,tr.PanNo
+		,au.iPk_AplcnAttch Authorized
+		,case when(tr.iIsPrimary=1) then 'Yes' else 'No' end as iIsPrimary
+		,case when (tr.iIsAuthorize=1) then 'Yes' else 'No' end as iIsAuthorize,
+		pn.iPk_AplcnAttch Pan
+		,pr.iPk_AplcnAttch [Profile],
+		pr.DocumentExtension ProfileExtension,
+		pr.DocumentContent ProfileContentType,
+		cast(pr.bAttachFile as nvarchar(max)) Profilefile
+		,au.iPk_AplcnAttch Auth,
+		aa.iPk_AplcnAttch signaturefile,
+		ab.iPk_AplcnAttch Educationfile,
+		ac.iPk_AplcnAttch Letterfile
+		FROM  TRSTDEPT tr
+		inner join TRSTINFO tfo on tfo.PK_TrstInfoId=tr.iFk_TrstInfoId
+		left join APLCTNATTCH ad on ad.iFk_AplcndetId=tr.PK_TrstDetId and ad.iDocTyp=@AadhaarDocumenttype and  ad.sFormName='Trustee'
+		left join APLCTNATTCH pn on pn.iFk_AplcndetId=tr.PK_TrstDetId and pn.iDocTyp=@PanDocumenttype  and  pn.sFormName='Trustee'
+		left join APLCTNATTCH pr on pr.iFk_AplcndetId=tr.PK_TrstDetId and pr.iDocTyp=@ProfileDocumenttype and pr.sFormName='Trustee'
+		left join APLCTNATTCH au on au.iFk_AplcndetId=tr.PK_TrstDetId and au.iDocTyp=@AuthroziedDocType and au.sFormName='Trustee'
+
+		left join APLCTNATTCH aa on aa.iFk_AplcndetId=tr.PK_TrstDetId and aa.iDocTyp=@SignaturePicType and aa.sFormName='Trustee'
+		left join APLCTNATTCH ab on ab.iFk_AplcndetId=tr.PK_TrstDetId and ab.iDocTyp=@EducationProofType and ab.sFormName='Trustee'
+		left join APLCTNATTCH ac on ac.iFk_AplcndetId=tr.PK_TrstDetId and ac.iDocTyp=@ConsentLetterType and ac.sFormName='Trustee'
+		left join APLCTNBASICINFO bi on bi.iPk_ClgID=tr.sCollageId
+		left join CSTMENUM cst on cst.iPK_CustEnum=tr.sOccupationId
+		where tr.iFk_TrstInfoId=@TrustInfoId
+		--where iIsActive=1 
+        SELECT 1 AS [Flag] , 'Success' AS [Message]  
+ END 
+  IF(@Type='DocumentDetails')  
+  BEGIN 
+        select  CAST(bAttachFile AS nvarchar(max)) as Filestring,DocumentExtension,DocumentContent from APLCTNATTCH where iPk_AplcnAttch=@IdentityId
+		--where iIsActive=1 
+        SELECT 1 AS [Flag] , 'Success' AS [Message]  
+ END  
+ IF(@Type='Delete')
+ BEGIN
+   DELETE TRSTDEPT WHERE PK_TrstDetId=@IdentityId
+   DELETE APLCTNATTCH where  sFormName='Trustee' and iFK_AplcndetId=@IdentityId
+   SELECT 1 AS [Flag] , 'Success' AS [Message]  
+ END
+END Try   
+ BEGIN CATCH 
+    INSERT INTO dbo.EXCPTNLOG(sExcptnMsg,bStoredProcdurExcptn,sExcptnSource,sExcptnUrl,iLogDt,bIsActv)
+	VALUES ('[dbo].[USP_ADMIN_Trustee_SaveView]','StoredProcedure','Error At Line No '+cast(ERROR_LINE() AS varchar) + ' ' + ''+cast(ERROR_Number() AS varchar) + ' ' + ERROR_MESSAGE (),null,GETDATE(),1)		
+    SELECT 5 AS [Flag],'Error has occurred!' AS [Message],Null as PartyId   
+ END CATCH     
+END
+-------------------------------------------------------------------
+
+ALTER Procedure [dbo].[USP_ADMIN_CustomFieldsByEnumNo_View]  
+(  
+@EnumNo Int  
+)  
+AS   
+BEGIN  
+ BEGIN TRY  
+ IF(@EnumNo>0)  
+   if(@EnumNo=37)  
+   Begin  
+    SELECT iId Id,sName CustomName,iId  from CSTMENUM where iFK_EnumNo=37 and ISNULL(iIsActv,1)=1  
+   End  
+   else if(@EnumNo=49)
+   Begin
+   Select iPK_CustEnum Id,sName CustomName from CSTMENUM where iFK_EnumNo=49 and ISNULL(iIsActv,1)=1  
+   End
+   else  
+ BEGIN  
+   
+  SELECT iPK_CustEnum Id,sName CustomName  from CSTMENUM where iFK_EnumNo=29 and ISNULL(iIsActv,1)=1  
+ END  
+ ELSE  
+ BEGIN  
+  SELECT iPK_CatId Id,sName CustomName from SRVCMST where ISNULL(iIsActv,1)=1  
+ END  
+ END TRY   
+ BEGIN CATCH     
+ INSERT INTO dbo.EXCPTNLOG(sExcptnMsg,bStoredProcdurExcptn,sExcptnSource,sExcptnUrl,iLogDt,bIsActv)  
+ VALUES ('[dbo].[USP_ADMIN_CustomFieldsByEnumNo_View]','StoredProcedure','Error At Line No '+cast(ERROR_LINE() AS varchar) + ' ' + ''+cast(ERROR_Number() AS varchar) + ' ' + ERROR_MESSAGE (),null,GETDATE(),1)    
+  SELECT -1 as StatusCode, 'Check Error - ' + cast(ERROR_Number() as varchar) + ' ' + ERROR_MESSAGE () as [Message],'' AS Body  
+ END CATCH  
+End  
+------------------------------------------
+
 
 
 

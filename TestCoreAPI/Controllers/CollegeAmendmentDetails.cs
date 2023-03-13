@@ -181,6 +181,13 @@ namespace TestCoreAPI.Controllers
         {
             return ObjRate.DeleteApplicantDetail(obj);
         }
+
+        [HttpPost]
+        [Route("UpdateDocDetailMerger")]
+        public ResponseData UpdateDocDetailMerger(AmendmentBO obj)
+        {
+            return ObjRate.DeleteMergerApplicantion(obj);
+        }
         #endregion
     }
 }

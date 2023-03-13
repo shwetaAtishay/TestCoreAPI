@@ -19,7 +19,7 @@ namespace DL
             DataSet ds = new DataSet();
             try
             {
-                SqlParameter[] param = new SqlParameter[22];
+                SqlParameter[] param = new SqlParameter[35];
                 param[0] = new SqlParameter("@Type", "Insert");
                 param[1] = new SqlParameter("@Name", _obj.Name);
                 param[2] = new SqlParameter("@Email", _obj.Email);
@@ -43,6 +43,22 @@ namespace DL
                 param[19] = new SqlParameter("@AuthorizedExtension", _obj.AuthorizedExtension);
                 param[20] = new SqlParameter("@AuthorizedDocumentContent", _obj.AuthorizedContentType);
                 param[21] = new SqlParameter("@Authorized", _obj.Authorized);
+
+                param[22] = new SqlParameter("@OccupationId", _obj.OccupationId);
+                param[23] = new SqlParameter("@GenderId", _obj.GenderId);
+                param[24] = new SqlParameter("@FatherName", _obj.FatherName);
+                param[25] = new SqlParameter("@CollageId", _obj.CollageId);
+                param[26] = new SqlParameter("@Educationfile", _obj.Educationfile);
+                param[27] = new SqlParameter("@EducationfileExtension", _obj.EducationfileExtension);
+                param[28] = new SqlParameter("@EducationfileContentType", _obj.EducationfileContentType);
+
+                param[29] = new SqlParameter("@Letterfile", _obj.Letterfile);
+                param[30] = new SqlParameter("@LetterfileExtension", _obj.LetterfileExtension);
+                param[31] = new SqlParameter("@LetterfileContentType", _obj.LetterfileContentType);
+
+                param[32] = new SqlParameter("@signaturefile", _obj.signaturefile);
+                param[33] = new SqlParameter("@signaturefileExtension", _obj.signaturefileExtension);
+                param[34] = new SqlParameter("@signaturefileContentType", _obj.signaturefileContentType);
 
                 ds = BaseFunction.FillDataSet("[dbo].[USP_ADMIN_Trustee_SaveView]", param);
                 if (ds != null && ds.Tables != null && ds.Tables.Count > 0)
@@ -115,8 +131,13 @@ namespace DL
                                     PanNo = DR["PanNo"].NulllToString(),
                                     isPrimary = DR["iIsPrimary"].NulllToString(),
                                     isAuthorize = DR["iIsAuthorize"].NulllToString(),
-                                    Authorized = DR["Auth"].NulllToString(),
-
+                                    OccupationId = DR["OccupationId"].NulllToString(),
+                                    GenderId = DR["GenderId"].NulllToString(),
+                                    FatherName = DR["FatherName"].NulllToString(),
+                                    CollageId = DR["CollageId"].NulllToString(),
+                                    Educationfile = DR["Educationfile"].NulllToString(),
+                                    signaturefile = DR["signaturefile"].NulllToString(),
+                                    Letterfile = DR["Letterfile"].NulllToString(),
                                 });
                             }
                         }
