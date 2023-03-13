@@ -137,6 +137,7 @@ namespace DL
                                     CollageId = DR["CollageId"].NulllToString(),
                                     Educationfile = DR["Educationfile"].NulllToString(),
                                     signaturefile = DR["signaturefile"].NulllToString(),
+                                    Letterfile = DR["Letterfile"].NulllToString(),
 
                                 });
                             }
