@@ -144,8 +144,8 @@ namespace DL
                 param[26] = new SqlParameter("@CollageCategory", obj.CollageCategory);
                 param[27] = new SqlParameter("@AIESHCodeStats", obj.AISHECodeStatus);
                 param[28] = new SqlParameter("@AIESHCode", obj.AIESHCode);
-                param[29] = new SqlParameter("@iFk_ParlmntId", obj.PaliamentAreaName);
-                param[30] = new SqlParameter("@iFk_AsmblId", obj.LegislativeAreaName);
+                param[29] = new SqlParameter("@iFk_ParlmntId", obj.Paliamentarea);
+                param[30] = new SqlParameter("@iFk_AsmblId", obj.LegislativeId);
                 param[31] = new SqlParameter("@CollageNamehindi", obj.CollageNamehindi);
                 param[32] = new SqlParameter("@CollegeTypeId", obj.CollegeTypeId);
                 param[33] = new SqlParameter("@TagDegrees", obj.TagDegrees);
@@ -376,8 +376,8 @@ namespace DL
                 param[27] = new SqlParameter("@CollageCategory", obj.CollageCategory);
                 param[28] = new SqlParameter("@AIESHCodeStats", obj.AISHECodeStatus);
                 param[29] = new SqlParameter("@AIESHCode", obj.AIESHCode);
-                param[30] = new SqlParameter("@iFk_ParlmntId", obj.PaliamentAreaName);
-                param[31] = new SqlParameter("@iFk_AsmblId", obj.LegislativeAreaName);
+                param[30] = new SqlParameter("@iFk_ParlmntId", obj.Paliamentarea);
+                param[31] = new SqlParameter("@iFk_AsmblId", obj.LegislativeId);
                 param[32] = new SqlParameter("@CollageNamehindi", obj.CollageNamehindi);
                 param[33] = new SqlParameter("@CollegeTypeId", obj.CollegeTypeId);
                 param[34] = new SqlParameter("@TagDegrees", obj.TagDegrees);
@@ -464,8 +464,8 @@ namespace DL
                         _Details.CollageCategory = ds.Tables[0].Rows[0]["CollageCategory"].ToString();
                         _Details.AISHECodeStatus = ds.Tables[0].Rows[0]["AISHECodeStatus"].ToString();
                         _Details.AIESHCode = ds.Tables[0].Rows[0]["AIESHCode"].ToString();
-                        _Details.PaliamentAreaName = ds.Tables[0].Rows[0]["iFk_ParlmntId"].NulllToInt();
-                        _Details.LegislativeAreaName = ds.Tables[0].Rows[0]["iFk_AsmblId"].NulllToInt();
+                        _Details.Paliamentarea = ds.Tables[0].Rows[0]["iFk_ParlmntId"].NulllToInt();
+                        _Details.LegislativeId = ds.Tables[0].Rows[0]["iFk_AsmblId"].NulllToInt();
                         _Details.CollageNamehindi = ds.Tables[0].Rows[0]["CollageNamehindi"].NulllToString();
                         _Details.DivisionId = ds.Tables[0].Rows[0]["iFk_DivId"].NulllToInt();
                         _Details.SubDivisionId = ds.Tables[0].Rows[0]["iFK_SubDivId"].NulllToInt();
