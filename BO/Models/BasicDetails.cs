@@ -91,8 +91,8 @@ namespace BO.Models
         public string CollageCategory { get; set; }
         public string AISHECodeStatus { get; set; }
         public string AIESHCode { get; set; }
-        public int PaliamentAreaName { get; set; }
-        public int LegislativeAreaName { get; set; }
+        public int Paliamentarea { get; set; }
+        public int LegislativeId { get; set; }
         public string CollageNamehindi { get; set; }
         public int DivisionId { get; set; }
         public int SubDivisionId { get; set; }
