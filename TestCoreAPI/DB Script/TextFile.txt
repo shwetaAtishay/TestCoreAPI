@@ -1,4 +1,56 @@
-﻿____________________________________________________________________________________10.03.2023______________________________________________________________________________________
+﻿____________________________________________________________________________________10.03.2023 06:16______________________________________________________________________________________
+
+Alter table MST_BLDING_Details
+add sPWDOrderNo nvarchar(1000)
+
+Alter table MST_BLDING_Details
+add rentedOrderNo nvarchar(1000)
+
+Alter table MST_BLDING_Details
+add rentCertificate varbinary(MAX)
+
+---------------------------------------------------------------------------------------------------------------------------
+Update the Procedure "USP_ADMIN_GetMasterDataForDropdown_View" with following condition : BuildingDetails
+
+if(@type='BuildingDetails')
+begin
+select 
+sAppGUID
+,iFK_FinyrID
+,iFK_TrstID
+,iFK_ClgID
+,iFK_DeptID
+,sBldgntyp
+,sOrdNo
+,rentedOrderNo
+,format(dtOrd,'dd-MMM-yyyy') as dtOrd
+,cast(OwnedBldgnDoc as nvarchar(max)) as OwnedBldgnDoc
+,isnull(cast(nullif(year(format(dtAgrExp,'dd-MMM-yyyy')),1900) as nvarchar(1000)),'NA') as dtAgrExp
+,cast(AgrExpDoc as nvarchar(max)) as AgrExpDoc
+,cast(rentCertificate as nvarchar(max)) as rentCertificate
+,format(dtFireFrom,'dd-MMM-yyyy') as dtFireFrom
+,format(dtFireTo,'dd-MMM-yyyy') as  dtFireTo
+,cast(FireNOCDoc as nvarchar(max)) as FireNOCDoc
+,format(dtPWDFrom,'dd-MMM-yyyy') as dtPWDFrom
+,format(dtPWDTo,'dd-MMM-yyyy') as dtPWDTo
+,sPWDOrderNo
+,cast(PWDNOCDoc as nvarchar(max)) as PWDNOCDoc
+,cast(BFrontImg as nvarchar(max)) as BFrontImg
+,cast(BBackImg  as nvarchar(max)) as BBackImg
+,cast(BLeftImg  as nvarchar(max)) as BLeftImg
+,cast(BRightImg as nvarchar(max)) as BRightImg
+,cast(BOtherImg as nvarchar(max)) as BOtherImg
+,iStatus
+,format(dtCrtdOn,'dd-MMM-yyyy') as dtCrtdOn
+,dtCrtdBy
+from MST_BLDING_Details
+where iFK_ClgID  = @menuId
+end
+
+
+
+
+____________________________________________________________________________________10.03.2023______________________________________________________________________________________
  --========================================================================
  --Author:<Vivek Choudhary>
  --Create Date:<26.Sep.2022>

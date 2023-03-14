@@ -1,0 +1,745 @@
+﻿
+GO
+/****** Object:  StoredProcedure [dbo].[USP_WomenCoEducation_Save]    Script Date: 13-03-2023 13:33:16 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+ALTER Procedure [dbo].[USP_WomenCoEducation_Save] 
+--declare
+( 
+@Type nvarchar(100)=null,
+@TypeId nvarchar(100)=null,
+
+--@SocityIdOld int=null,
+
+@ConsentofManagement nvarchar(max)=null,
+@ConsentofManagementExtension nvarchar(500)=null,
+@ConsentofManagementContenttype nvarchar(500)=null,
+
+@DocumentConsent nvarchar(max)=null,
+@DocumentConsentExtension nvarchar(500)=null,
+@DocumentConsentContenttype nvarchar(500)=null,
+
+@UserBy nvarchar(100)=null,
+@iCollegeId nvarchar(50)=null,
+
+@trusID nvarchar(100)=null
+)    
+--select @Type=N'Insert',@TypeId=N'2',@NewSocityId=N'1834',@SocityIdOld=N'1834',@ConsentofManagement=N'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',@ConsentofManagementExtension=N'jpg',@ConsentofManagementContenttype=N'image/jpeg',@DocumentConsent=N'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',@DocumentConsentExtension=N'jpg',@DocumentConsentContenttype=N'image/jpeg',@UserBy=N''
+As    
+Begin    
+	Begin Try
+	if(@Type ='Insert')
+	BEGIN
+	 declare @Id int,
+	   @ConsentofManagementtype int,
+	   @DocumentforConsenttype int
+
+	   set @ConsentofManagementtype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=55 and sName='Consent of Management')
+	   set @DocumentforConsenttype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=55 and sName='Document for Consent')
+	   
+	    insert into CollegeAmendment(stypeId,CreateOn, sCreateBy,iCollegeId,iTrustId)
+		                      values(@TypeId, GETDATE(), @UserBy,@iCollegeId,@trusID)
+		SELECT @Id=@@IDENTITY
+
+		--print @Id
+		if(@ConsentofManagement IS NOT NULL)
+		begin
+		--@Payment Document
+		INSERT INTO APLCTNATTCH(iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES                  (0,@Id,'AmendmentWomenCoEducationDocument',CAST(@ConsentofManagement AS VARBINARY(max)),@ConsentofManagementtype,1,GETDATE(),@ConsentofManagementExtension,@ConsentofManagementContenttype)
+		end
+
+	   if(@DocumentConsent IS NOT NULL)
+		begin		
+		INSERT INTO APLCTNATTCH(iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES                  (0,@Id,'AmendmentWomenCoEducationDocument',CAST(@DocumentConsent AS VARBINARY(max)),@DocumentforConsenttype,1,GETDATE(),@DocumentConsentExtension,@DocumentConsentContenttype)
+		end
+		
+		--select @IdentityId=@@IDENTITY
+		 select 1 as StatusCode , 'Saved Successfully!' as [Message],@Id as Id 
+		 END
+    
+	END TRY     
+	begin catch       
+		EXEC [dbo].[USP_ADMIN_StoreProcedureErrorHandling_Save] 0,0,1 --To log Stored procedure errors    
+		select -1 as StatusCode, 'Check Error - ' + cast(ERROR_Number() as varchar) + ' ' + ERROR_MESSAGE () as [Message],'' AS Body    
+   end catch    
+End
+-------------------------------------------------------------------------------------------------------------------------------------------
+GO
+/****** Object:  StoredProcedure [dbo].[USP_ChangeNameofCollege_Save]    Script Date: 13-03-2023 13:34:17 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+ALTER Procedure [dbo].[USP_ChangeNameofCollege_Save] --'GetDetails'
+( 
+@Type nvarchar(100)=null,
+@TypeId nvarchar(100)=null,
+@sNewNameEnglish nvarchar(100)=null,
+@sNewNameHindi nvarchar(100)=null,
+@CollegeAttch nvarchar(max)=null,
+@CollegeAttchExtension nvarchar(500)=null,
+@CollegeAttchContenttype nvarchar(500)=null,
+@iCollegeId  nvarchar(50)=null,
+@trusID nvarchar(100)=null
+)    
+As    
+Begin    
+	Begin Try
+	if(@Type ='Insert')
+	   IF EXISTS (SELECT * FROM CollegeAmendment WHERE iTrustId=@trusID and iCollegeId=@iCollegeId and stypeId=@TypeId)
+   --IF EXISTS (SELECT * FROM  APLCTNATTCH where sFormName='CollegePlace'and iFk_AplcndetId=@trusID and iPk_AplcnAttch=@iCollegeId)
+   --IF EXISTS (SELECT * FROM  APLCTNATTCH where sFormName='ChangePlaceCommitte' and iFk_AplcndetId=@iCollegeId)   
+ BEGIN 
+	select 1 as StatusCode , 'Alreday Exists Details In Table Please Remove Details!' as [Message]	  
+ END
+ELSE 
+
+	BEGIN
+	 declare @Id int,
+	   @ChnageCollegeAttchtype int	  
+
+	   set @ChnageCollegeAttchtype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=56 and sName='ChnageCollegeAttch')
+	   
+	    insert into CollegeAmendment(sNewNameEnglish,sNewNameHindi,CreateOn,stypeId,iCollegeId,iTrustId)
+		                     values(@sNewNameEnglish,@sNewNameHindi,GeTDATE(),@TypeId,@iCollegeId,@trusID)
+		SELECT @Id=@@IDENTITY
+
+		--print @Id
+		if(@CollegeAttch IS NOT NULL)
+		begin
+		--@Payment Document
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES                  (0,@Id,'AmendmentNameOfCollege',CAST(@CollegeAttch AS VARBINARY(max)),@ChnageCollegeAttchtype,1,GETDATE(),@CollegeAttchExtension,@CollegeAttchContenttype)
+		end
+
+		--select @IdentityId=@@IDENTITY
+
+		 select 1 as StatusCode , 'Saved Successfully!' as [Message],@Id as Id 
+		 END
+    
+	if(@Type ='GetDetails')
+	BEGIN
+	     SELECT * FROM PARTIALLYPAYMNT
+		-- select 1 as StatusCode , 'Saved Successfully!' as [Message]
+		 END
+	END TRY     
+	begin catch       
+		EXEC [dbo].[USP_ADMIN_StoreProcedureErrorHandling_Save] 0,0,1 --To log Stored procedure errors    
+		select -1 as StatusCode, 'Check Error - ' + cast(ERROR_Number() as varchar) + ' ' + ERROR_MESSAGE () as [Message],'' AS Body    
+   end catch    
+End
+-----------------------------------------------------------------------------------------------------------------------------------------
+GO
+/****** Object:  StoredProcedure [dbo].[USP_ChangeCollegeManagement_Save]    Script Date: 13-03-2023 13:35:22 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER Procedure [dbo].[USP_ChangeCollegeManagement_Save] 
+( 
+@Type nvarchar(100)=null,
+@TypeId nvarchar(100)=null,
+@NewSocityID nvarchar(100)=null,
+@ResolutionMagtCommitte nvarchar(max)=null,
+@ResolutionMagtCommitteExtension nvarchar(500)=null,
+@ResolutionMagtCommittetype nvarchar(500)=null,
+
+@AnnexureManagementCommitte nvarchar(max)=null,
+@AnnexureManagementCommitteExtension nvarchar(500)=null,
+@AnnexureManagementCommittetype nvarchar(500)=null,
+@iCollegeId nvarchar(50)=null,
+@trusID nvarchar(100)=null
+)    
+As    
+Begin    
+	Begin Try
+	if(@Type ='Insert')
+IF EXISTS (SELECT * FROM CollegeAmendment WHERE iTrustId=@trusID and iCollegeId=@iCollegeId and stypeId=@TypeId )
+   --IF EXISTS (SELECT * FROM  APLCTNATTCH where sFormName='CollegePlace'and iFk_AplcndetId=@trusID and iPk_AplcnAttch=@iCollegeId)
+   --IF EXISTS (SELECT * FROM  APLCTNATTCH where sFormName='ChangePlaceCommitte' and iFk_AplcndetId=@iCollegeId)   
+ BEGIN 
+	select 1 as StatusCode , 'Alreday Exists Details In Table Please Remove Details' as [Message]	  
+ END
+ELSE 
+	BEGIN
+	 declare @Id int,
+	   @CollegeManagementtype int,	  
+	   @ChangeManagementCommittetype int	 
+
+	      set @CollegeManagementtype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=57 and sName='CollegeManagement')
+	      set @ChangeManagementCommittetype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=57 and sName='ChangeManagementCommitte')
+
+	    insert into CollegeAmendment(iNewSocity_Id,CreateOn,stypeId,iCollegeId,iTrustId)
+		                     values(@NewSocityID,GeTDATE(),@TypeId,@iCollegeId,@trusID)
+		SELECT @Id=@@IDENTITY
+
+		--print @Id
+		if(@ResolutionMagtCommitte IS NOT NULL)
+		begin
+		--@Payment Document
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES                  (0,@Id,'AmendmentCollegeManagement',CAST(@ResolutionMagtCommitte AS VARBINARY(max)),@CollegeManagementtype,1,GETDATE(),@ResolutionMagtCommitteExtension,@ResolutionMagtCommittetype)
+		end
+
+		--print @Id
+		if(@AnnexureManagementCommitte IS NOT NULL)
+		begin
+		--@Payment Document
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES                  (0,@Id,'AmendmentCollegeManagement',CAST(@AnnexureManagementCommitte AS VARBINARY(max)),@ChangeManagementCommittetype,1,GETDATE(),@AnnexureManagementCommitteExtension,@AnnexureManagementCommittetype)
+		end
+
+		--select @IdentityId=@@IDENTITY
+
+		 select 1 as StatusCode , 'Saved Successfully!' as [Message]--,@Id as Id 
+		 END
+    
+	if(@Type ='GetDetails')
+	BEGIN
+	     SELECT * FROM PARTIALLYPAYMNT
+		-- select 1 as StatusCode , 'Saved Successfully!' as [Message]
+		 END
+	END TRY     
+	begin catch       
+		EXEC [dbo].[USP_ADMIN_StoreProcedureErrorHandling_Save] 0,0,1 --To log Stored procedure errors    
+		select -1 as StatusCode, 'Check Error - ' + cast(ERROR_Number() as varchar) + ' ' + ERROR_MESSAGE () as [Message],'' AS Body    
+   end catch    
+End
+-------------------------------------------------------------------------------------------------------------------------------------------
+GO
+/****** Object:  StoredProcedure [dbo].[USP_MergerApplicantInformatio_Save]    Script Date: 13-03-2023 13:36:28 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+ALTER Procedure [dbo].[USP_MergerApplicantInformatio_Save] 
+( 
+@Type nvarchar(100)=null,
+
+@ProposalSocietyMerger nvarchar(max)=null,
+@ProposalSocietyMergerExtension nvarchar(500)=null, 
+@ProposalSocietyMergerTYPEtype nvarchar(500)=null,
+
+@NOCsissued nvarchar(max)=null,
+@NOCsissuedExtension nvarchar(500)=null, 
+@NOCsissuedtetype nvarchar(500)=null,
+
+@LstUnivsityAffiliationCollege nvarchar(max)=null,
+@LstUnivsityAffiliationCollegeExtension nvarchar(500)=null,
+@LstUnivsityAffiliationCollegetype nvarchar(500)=null,
+
+@Affidavitconsent nvarchar(max)=null,
+@AffidavitconsentExtension nvarchar(500)=null,
+@Affidavitconsenttype nvarchar(500)=null,
+
+@AffidavitParents nvarchar(max)=null,
+@AffidavitParentsExtension nvarchar(500)=null,
+@AffidavitParentstype nvarchar(500)=null,
+
+@AllNOCsIssue nvarchar(max)=null,
+@AllNOCsIssuedExtension nvarchar(500)=null,
+@AllNOCsIssuedstype nvarchar(500)=null,
+
+@LatestUniversityAffilliation nvarchar(max)=null, 
+@LatestUniversityAffilliationExtension nvarchar(500)=null,
+@LatestUniversityAffilliationtype nvarchar(500)=null,
+
+@NOCAffiliatting nvarchar(max)=null, 
+@NOCAffiliattingExtension nvarchar(500)=null,
+@NOCAffiliattingtype nvarchar(500)=null,
+
+
+@AffidavitConsentParents nvarchar(max)=null,
+@AffidavitConsentParentsExtension nvarchar(500)=null,
+@AffidavitConsentParentstype nvarchar(500)=null,
+
+@LandCertificate  nvarchar(max)=null, 
+@LandCertificateExtension nvarchar(500)=null,
+@LandCertificatetype nvarchar(500)=null,
+
+@BluePrintBuilding nvarchar(max)=null,
+@BluePrintBuildingExtension  nvarchar(500)=null,
+@BluePrintBuildingtype nvarchar(500)=null,
+
+@StaffInformation nvarchar(max)=null,
+@StaffInformationExten nvarchar(500)=null,
+@StaffInformationContenttype nvarchar(500)=null,
+
+@TypeId nvarchar(100)=null,
+@iCollegeId nvarchar(50)=null,
+@trusID nvarchar(100)=null,
+@idclgID int=0
+)    
+As    
+Begin    
+	Begin Try
+	if(@Type ='Insert')
+	   IF EXISTS (SELECT * FROM CollegeAmendment WHERE iTrustId=@trusID and iCollegeId=@iCollegeId and stypeId=@TypeId )
+   --IF EXISTS (SELECT * FROM  APLCTNATTCH where sFormName='CollegePlace'and iFk_AplcndetId=@trusID and iPk_AplcnAttch=@iCollegeId)
+   --IF EXISTS (SELECT * FROM  APLCTNATTCH where sFormName='ChangePlaceCommitte' and iFk_AplcndetId=@iCollegeId)   
+ BEGIN 
+	select 1 as StatusCode , 'Alreday Exists Details In Table Please Remove Details' as [Message]	  
+ END
+ELSE 
+	BEGIN
+	 declare @Id int,
+	   @ProposalSocietyMergertype int,	  
+	   @NOCsissuedtype int,
+	   @LstUnivsityAffiliationColtype int,
+	   @AAAffidavitconsenttype int,
+	   @PAffidavitParentstype int,
+
+	   @AllNOCsIssuedtype int,
+	   @UniversityAffilliationType int,
+	   @NOCAffiliattingTyp int,
+	   @AffidavitConsentParentsTyp int,
+	   @LandCertificateTyp int,
+	   @BluePrintBuildingTyp int,
+	   @StaffInformationTyp int
+		  
+		  set @ProposalSocietyMergertype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='ProposalSocietyMerger')
+	      set @NOCsissuedtype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='NOCsissued')
+		  set @LstUnivsityAffiliationColtype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='LstUnivsityAffiliationCollege') 
+		  set @AAAffidavitconsenttype=(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='Affidavitconsent')
+		  set @PAffidavitParentstype=(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='AffidavitParents')
+		  --Othermerger Details
+		  set @AllNOCsIssuedtype=(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='AmendAllNOC')
+		  set @UniversityAffilliationType=(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='AmendLatestUniversity')
+		  set @NOCAffiliattingTyp=(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='AmendNOCAffiliattingTyp')
+		  set @AffidavitConsentParentsTyp=(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='AmendAffidavitConsentParents')
+		  set @LandCertificateTyp=(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='AmendLandCertificateTyp')
+		  set @BluePrintBuildingTyp=(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='AmendBluePrintBuildingTyp')
+		  set @StaffInformationTyp=(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='AmendStaffInformationTyp')
+	    insert into CollegeAmendment(CreateOn,stypeId,iCollegeId,iTrustId)
+		                     values(GeTDATE(),@TypeId,@iCollegeId,@trusID)
+		SELECT @Id=@@IDENTITY
+
+		--print @Id
+		if(@ProposalSocietyMerger IS NOT NULL)
+		begin
+		--@Payment Document
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES                  (0,@Id,'MergerInformation',CAST(@ProposalSocietyMerger AS VARBINARY(max)),@ProposalSocietyMergertype,1,GETDATE(),@ProposalSocietyMergerExtension,@ProposalSocietyMergerTYPEtype)
+		end
+
+		--print @Id
+		if(@NOCsissued IS NOT NULL)
+		begin
+		--@Payment Document
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES                  (0,@Id,'MergerInformation',CAST(@NOCsissued AS VARBINARY(max)),@NOCsissuedtype,1,GETDATE(),@NOCsissuedExtension,@NOCsissuedtetype)
+		end
+
+		if(@LstUnivsityAffiliationCollege IS NOT NULL)
+		begin
+		--@Payment Document
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES                  (0,@Id,'MergerInformation',CAST(@LstUnivsityAffiliationCollege AS VARBINARY(max)),@LstUnivsityAffiliationColtype,1,GETDATE(),@LstUnivsityAffiliationCollegeExtension,@LstUnivsityAffiliationCollegetype)
+		end
+
+		if(@Affidavitconsent IS NOT NULL)
+		begin
+		--@Payment Document
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES                  (0,@Id,'MergerInformation',CAST(@Affidavitconsent AS VARBINARY(max)),@AAAffidavitconsenttype,1,GETDATE(),@AffidavitconsentExtension,@Affidavitconsenttype)
+		end
+
+	    if(@AffidavitParents IS NOT NULL)
+		begin
+		--@Payment Document
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES                  (0,@Id,'MergerInformation',CAST(@AffidavitParents AS VARBINARY(max)),@PAffidavitParentstype,1,GETDATE(),@AffidavitParentsExtension,@AffidavitParentstype)
+		end
+
+		--Other NOC Doc
+
+		 if(@AllNOCsIssue IS NOT NULL)
+		begin
+		--@Payment Document
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES                  (0,@Id,'MergerInformation',CAST(@AllNOCsIssue AS VARBINARY(max)),@AllNOCsIssuedtype,1,GETDATE(),@AllNOCsIssuedExtension,@AllNOCsIssuedstype)
+		end
+		
+		 if(@LatestUniversityAffilliation IS NOT NULL)
+		begin
+		--@Payment Document
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES                  (0,@Id,'MergerInformation',CAST(@LatestUniversityAffilliation AS VARBINARY(max)),@UniversityAffilliationType,1,GETDATE(),@LatestUniversityAffilliationExtension,@LatestUniversityAffilliationtype)
+		end
+		
+ 		 if(@NOCAffiliatting IS NOT NULL)
+		begin
+		--@Payment Document
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES                  (0,@Id,'MergerInformation',CAST(@NOCAffiliatting AS VARBINARY(max)),@NOCAffiliattingTyp,1,GETDATE(),@NOCAffiliattingExtension,@NOCAffiliattingtype)
+		end
+
+		
+	  if(@AffidavitConsentParents IS NOT NULL) 
+		begin
+		--@Payment Document
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES                  (0,@Id,'MergerInformation',CAST(@AffidavitConsentParents AS VARBINARY(max)), @AffidavitConsentParentsTyp,1,GETDATE(),@AffidavitConsentParentsExtension,@AffidavitConsentParentstype)
+		end
+
+		if(@LandCertificate IS NOT NULL)
+		begin
+		--@Payment Document
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES                  (0,@Id,'MergerInformation',CAST(@LandCertificate AS VARBINARY(max)),@LandCertificateTyp,1,GETDATE(),@LandCertificateExtension,@LandCertificatetype)
+		end
+
+		if(@BluePrintBuilding IS NOT NULL)
+		begin
+		--@Payment Document
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES                  (0,@Id,'MergerInformation',CAST(@BluePrintBuilding AS VARBINARY(max)),@BluePrintBuildingTyp,1,GETDATE(),@BluePrintBuildingExtension,@BluePrintBuildingtype)
+		end
+
+		if(@StaffInformation IS NOT NULL)
+		begin
+		--@Payment Document
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES                  (0,@Id,'MergerInformation',CAST(@StaffInformation AS VARBINARY(max)),@StaffInformationTyp,1,GETDATE(),@StaffInformationExten,@StaffInformationContenttype)
+		end
+		
+		--select @IdentityId=@@IDENTITY
+
+		 select 1 as StatusCode , 'Saved Successfully!' as [Message],@Id as Id 
+		 END
+    
+	if(@Type ='GetDetails')
+	BEGIN
+	     SELECT * FROM PARTIALLYPAYMNT
+		-- select 1 as StatusCode , 'Saved Successfully!' as [Message]
+		 END
+	if(@Type ='Details')
+	BEGIN
+	    
+
+          set @ProposalSocietyMergertype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='ProposalSocietyMerger')
+	      set @NOCsissuedtype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='NOCsissued')
+		  set @LstUnivsityAffiliationColtype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='LstUnivsityAffiliationCollege') 
+		  set @AAAffidavitconsenttype=(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='Affidavitconsent')
+		  set @PAffidavitParentstype=(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='AffidavitParents')
+		  --Othermerger Details
+		  set @AllNOCsIssuedtype=(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='AmendAllNOC')
+		  set @UniversityAffilliationType=(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='AmendLatestUniversity')
+		  set @NOCAffiliattingTyp=(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='AmendNOCAffiliattingTyp')
+		  set @AffidavitConsentParentsTyp=(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='AmendAffidavitConsentParents')
+		  set @LandCertificateTyp=(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='AmendLandCertificateTyp')
+		  set @BluePrintBuildingTyp=(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='AmendBluePrintBuildingTyp')
+		  set @StaffInformationTyp=(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=47 and sName='AmendStaffInformationTyp')
+
+
+
+		select tr.iPk_ClgAmdId ,bi.sNameOfClg sNameOfClg,
+		 ad.iPk_AplcnAttch ProposalSocietyMergertype,
+		 pn.iPk_AplcnAttch NOCsissuedtype,
+		 pr.iPk_AplcnAttch LstUnivsityAffiliationColtype,
+		 au.iPk_AplcnAttch AAAffidavitconsenttype,
+		 aa.iPk_AplcnAttch PAffidavitParentstype,
+		 ab.iPk_AplcnAttch AllNOCsIssuedtype,
+		 ac.iPk_AplcnAttch UniversityAffilliationType,
+		 ah.iPk_AplcnAttch NOCAffiliattingTyp,
+		 ae.iPk_AplcnAttch AffidavitConsentParentsTyp,
+		 af.iPk_AplcnAttch LandCertificateTyp,
+		 ag.iPk_AplcnAttch BluePrintBuildingTyp,
+		 ai.iPk_AplcnAttch StaffInformationTyp
+
+		from  CollegeAmendment tr 
+		left join APLCTNATTCH ad on ad.iFk_AplcndetId=tr.iPk_ClgAmdId and ad.iDocTyp=@ProposalSocietyMergertype and ad.sFormName='MergerInformation' 
+		left join APLCTNATTCH pn on pn.iFk_AplcndetId=tr.iPk_ClgAmdId and pn.iDocTyp=@NOCsissuedtype  and  pn.sFormName='MergerInformation'
+		left join APLCTNATTCH pr on pr.iFk_AplcndetId=tr.iPk_ClgAmdId and pr.iDocTyp=@LstUnivsityAffiliationColtype  and  pr.sFormName='MergerInformation'
+		left join APLCTNATTCH au on au.iFk_AplcndetId=tr.iPk_ClgAmdId and au.iDocTyp=@AAAffidavitconsenttype  and  au.sFormName='MergerInformation'
+		
+		left join APLCTNATTCH aa on aa.iFk_AplcndetId=tr.iPk_ClgAmdId and aa.iDocTyp=@PAffidavitParentstype  and  aa.sFormName='MergerInformation'
+		left join APLCTNATTCH ab on ab.iFk_AplcndetId=tr.iPk_ClgAmdId and ab.iDocTyp=@AllNOCsIssuedtype  and  ab.sFormName='MergerInformation'
+		left join APLCTNATTCH ac on ac.iFk_AplcndetId=tr.iPk_ClgAmdId and ac.iDocTyp=@UniversityAffilliationType  and  ac.sFormName='MergerInformation'
+		left join APLCTNATTCH ah on ah.iFk_AplcndetId=tr.iPk_ClgAmdId and ah.iDocTyp=@NOCAffiliattingTyp  and  ah.sFormName='MergerInformation'
+		left join APLCTNATTCH ae on ae.iFk_AplcndetId=tr.iPk_ClgAmdId and ae.iDocTyp=@AffidavitConsentParentsTyp  and  ae.sFormName='MergerInformation'
+		left join APLCTNATTCH af on af.iFk_AplcndetId=tr.iPk_ClgAmdId and af.iDocTyp=@LandCertificateTyp  and  af.sFormName='MergerInformation'
+		left join APLCTNATTCH ag on ag.iFk_AplcndetId=tr.iPk_ClgAmdId and ag.iDocTyp=@BluePrintBuildingTyp  and  ag.sFormName='MergerInformation'
+		left join APLCTNATTCH ai on ai.iFk_AplcndetId=tr.iPk_ClgAmdId and ai.iDocTyp=@StaffInformationTyp  and  ai.sFormName='MergerInformation'
+		left join APLCTNBASICINFO bi on bi.iPk_ClgID=tr.iCollegeId
+		where  tr.iCollegeId=@idclgID and tr.stypeId=45 and ad.iIsActive=1  and pn.iIsActive=1and pr.iIsActive=1 
+		and au.iIsActive=1 and aa.iIsActive=1  and ab.iIsActive=1 and ac.iIsActive=1 and ah.iIsActive=1
+		and ae.iIsActive=1 and af.iIsActive=1 and ag.iIsActive=1 and ai.iIsActive=1
+
+		 END
+	END TRY     
+	begin catch       
+		EXEC [dbo].[USP_ADMIN_StoreProcedureErrorHandling_Save] 0,0,1 --To log Stored procedure errors    
+		select -1 as StatusCode, 'Check Error - ' + cast(ERROR_Number() as varchar) + ' ' + ERROR_MESSAGE () as [Message],'' AS Body    
+   end catch    
+End
+---------------------------------------------------------------------------------------------------------------------------------------
+GO
+/****** Object:  StoredProcedure [dbo].[USP_ChangeCollegePlace_Save]    Script Date: 13-03-2023 13:37:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER Procedure [dbo].[USP_ChangeCollegePlace_Save] 
+( 
+@Type nvarchar(100)=null,
+@District int =0,
+@Tehsil int =0,
+@TypeId nvarchar(100)=null,
+@oldPlaceAddressone nvarchar(500)=null,
+@oldPlaceAddresstwo nvarchar(500)=null,
+@NewPlaceAddressone nvarchar(500)=null,
+@NewPlaceAddresstwo nvarchar(500)=null,
+
+@PlaceAttch  nvarchar(max)=null,
+@PlaceAttchExtension nvarchar(500)=null,
+@PlaceAttchContenttype nvarchar(500)=null,
+
+@ChangePlace nvarchar(max)=null,
+@ChangeManagementPlace nvarchar(500)=null,
+@ChangeManagementtePlace nvarchar(500)=null,
+@iCollegeId nvarchar(50)=null,
+@trusID nvarchar(100)=null
+)    
+As    
+Begin    
+
+	Begin Try
+	if(@Type ='Insert')
+
+   IF EXISTS (SELECT * FROM CollegeAmendment WHERE iTrustId=@trusID and iCollegeId=@iCollegeId and stypeId=@TypeId )
+   --IF EXISTS (SELECT * FROM  APLCTNATTCH where sFormName='CollegePlace'and iFk_AplcndetId=@trusID and iPk_AplcnAttch=@iCollegeId)
+   --IF EXISTS (SELECT * FROM  APLCTNATTCH where sFormName='ChangePlaceCommitte' and iFk_AplcndetId=@iCollegeId)   
+ BEGIN 
+	select 1 as StatusCode , 'Alreday Exists Details In Table Please Remove Details' as [Message]	  
+ END
+ELSE 
+
+	BEGIN
+	 declare @Id int,
+	   @CollegePlacetype int,	  
+	   @ChangePlaceCommittetype int	 
+
+	      set @CollegePlacetype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=54 and sName='CollegePlace')
+	      set @ChangePlaceCommittetype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=54 and sName='ChangePlaceCommitte')
+
+	    insert into CollegeAmendment(iDistrictNew,itehshilNew,sAddreslineoneold,sAddresslinetwoold,sAddreslineoneNew,sAddresslinetwoNew,CreateOn,stypeId,iCollegeId,iTrustId)
+		                     values(@District,@Tehsil,@oldPlaceAddressone,@oldPlaceAddresstwo,@NewPlaceAddressone,@NewPlaceAddresstwo,GeTDATE(),@TypeId,@iCollegeId,@trusID)
+		SELECT @Id=@@IDENTITY
+
+		--print @Id
+		if(@PlaceAttch IS NOT NULL)
+		begin
+		--@Payment Document
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES                  (0,@Id,'AmendmentNameOfCollegePlace',CAST(@PlaceAttch AS VARBINARY(max)),@CollegePlacetype,1,GETDATE(),@PlaceAttchExtension,@PlaceAttchContenttype)
+		end
+
+		--print @Id
+		if(@ChangePlace IS NOT NULL)
+		begin
+		--@Payment Document
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent)
+		VALUES                  (0,@Id,'AmendmentNameOfCollegePlace',CAST(@ChangePlace AS VARBINARY(max)),@ChangePlaceCommittetype,1,GETDATE(),@ChangeManagementPlace,@ChangeManagementtePlace)
+		end
+
+		--select @IdentityId=@@IDENTITY
+
+		 select 1 as StatusCode , 'Saved Successfully!' as [Message] --,@Id as Id 
+		 END
+    
+	if(@Type ='GetDetails')
+	BEGIN
+	     SELECT * FROM PARTIALLYPAYMNT
+		-- select 1 as StatusCode , 'Saved Successfully!' as [Message]
+		 END
+	END TRY     
+	begin catch       
+		EXEC [dbo].[USP_ADMIN_StoreProcedureErrorHandling_Save] 0,0,1 --To log Stored procedure errors    
+		select -1 as StatusCode, 'Check Error - ' + cast(ERROR_Number() as varchar) + ' ' + ERROR_MESSAGE () as [Message],'' AS Body    
+   end catch    
+End
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+GO
+/****** Object:  StoredProcedure [dbo].[USP_GetAmendmentDetails]    Script Date: 13-03-2023 13:38:39 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER Procedure [dbo].[USP_GetAmendmentDetails]  
+(@Type nvarchar(100)=null,
+@Id int = 0,
+@idclgID int=0
+)    
+As    
+Begin    
+	Begin Try
+	if(@Type='GetdetailsCoEducation')
+	BEGIN
+	Select attch.iPk_AplcnAttch, afc.iPk_ClgAmdId ,afc.stypeId,crs.sNameOfClg, afc.iCollegeId,
+	cast(attch.bAttachFile as nvarchar(max)) [docFile],attch.DocumentContent,attch.DocumentExtension 
+	,case when doctye.sName='Consent of Management' then 'Document for Consent of 25% parents of student (min.100) in this previous year'
+	      else 'Document for Consent of Management' end sName
+	from CollegeAmendment afc
+	   --inner join CSTMENUM fc on fc.iPK_CustEnum = afc.iFacilityId
+	   inner join APLCTNBASICINFO crs on crs.iPk_ClgID = afc.iCollegeId
+	   inner join APLCTNATTCH attch on attch.sFormName = 'AmendmentWomenCoEducationDocument' and attch.iFk_AplcndetId= afc.iPk_ClgAmdId 
+	   inner join CSTMENUM doctye on doctye.iFK_EnumNo=55 and doctye.iPK_CustEnum=attch.iDocTyp
+	   where afc.iCollegeId=@idclgID and attch.iIsActive=1
+	   order by afc.CreateOn desc 
+	END
+	if(@Type='DownloaddetailsCoEducation')
+	BEGIN
+	Select afc.iPk_ClgAmdId ,afc.stypeId,crs.sNameOfClg, afc.iCollegeId,cast(attch.bAttachFile as nvarchar(max)) [docFile],attch.DocumentContent,attch.DocumentExtension from CollegeAmendment afc
+	   --inner join CSTMENUM fc on fc.iPK_CustEnum = afc.iFacilityId
+	   inner join APLCTNBASICINFO crs on crs.iPk_ClgID = afc.iCollegeId
+	   inner join APLCTNATTCH attch on attch.sFormName = 'AmendmentWomenCoEducationDocument' and attch.iFk_AplcndetId= afc.iPk_ClgAmdId 
+	   where attch.iPk_AplcnAttch=@Id 
+	   order by afc.CreateOn desc 
+	END
+	 if(@Type='GetdetailsNameOfCollege')
+	BEGIN
+	   Select attch.iPk_AplcnAttch,afc.iPk_ClgAmdId ,afc.stypeId,crs.sNameOfClg
+	   , afc.iCollegeId,cast(attch.bAttachFile as nvarchar(max)) [docFile],attch.DocumentContent
+	   ,attch.DocumentExtension,afc.sNewNameEnglish,afc.sNewNameHindi
+	   from CollegeAmendment afc
+	   --inner join CSTMENUM fc on fc.iPK_CustEnum = afc.iFacilityId
+	  inner join APLCTNBASICINFO crs on crs.iPk_ClgID = afc.iCollegeId
+	   inner join APLCTNATTCH attch on attch.sFormName = 'AmendmentNameOfCollege' and attch.iFk_AplcndetId= afc.iPk_ClgAmdId
+	   where afc.iCollegeId=@idclgID and attch.iIsActive=1
+	   order by afc.CreateOn desc
+	END
+	 if(@Type='DownloaddetailsNameOfCollege')
+	BEGIN
+	   Select afc.iPk_ClgAmdId,afc.stypeId,crs.sNameOfClg, afc.iCollegeId,cast(attch.bAttachFile as nvarchar(max)) [docFile],attch.DocumentContent,attch.DocumentExtension from CollegeAmendment afc
+	   --inner join CSTMENUM fc on fc.iPK_CustEnum = afc.iFacilityId
+	  inner join APLCTNBASICINFO crs on crs.iPk_ClgID = afc.iCollegeId
+	   inner join APLCTNATTCH attch on attch.sFormName = 'AmendmentNameOfCollege' and attch.iFk_AplcndetId= afc.iPk_ClgAmdId
+	    where attch.iPk_AplcnAttch=@Id
+	   order by afc.CreateOn desc
+	END
+	
+
+	--GetCollegePlaceList
+	if(@Type='GetCollegePlaceList')
+	BEGIN
+	  select attch.iPk_AplcnAttch,cfa.iPk_ClgAmdId,cfa.iCollegeId,cfa.stypeId,crs.sNameOfClg,cfa.iDistrictold,cfa.iDistrictNew,ds.sMangalName as DistName,ts.sMangalName as tehsilName,cfa.itehshilold,cfa.itehshilNew,cfa.sAddreslineoneold,cfa.sAddreslineoneNew,cfa.sAddresslinetwoold,cfa.sAddresslinetwoNew ,
+	   cast(attch.bAttachFile as nvarchar(max)) [docFile],attch.DocumentContent,attch.DocumentExtension from CollegeAmendment cfa
+	   inner join DISTRICTMST ds on ds.iID = cfa.iDistrictNew
+	   inner join APLCTNBASICINFO crs on crs.iPk_ClgID = cfa.iCollegeId
+	   inner join TEHSILMST ts on ts.iID=cfa.itehshilNew
+	   inner join APLCTNATTCH attch on attch.sFormName ='AmendmentNameOfCollegePlace' and attch.iFk_AplcndetId= cfa.iPk_ClgAmdId
+	   where cfa.iCollegeId=@idclgID and attch.iIsActive=1  --4489
+	END
+    if(@Type='DownloadCollegePlaceList')
+	BEGIN
+	  select cfa.iPk_ClgAmdId,cfa.iCollegeId,cfa.stypeId,crs.sNameOfClg,cast(attch.bAttachFile as nvarchar(max)) [docFile],attch.DocumentContent,attch.DocumentExtension from CollegeAmendment cfa
+	   --inner join DISTRICTMST ds on ds.iID = cfa.iDistrictNew
+	   inner join APLCTNBASICINFO crs on crs.iPk_ClgID = cfa.iCollegeId
+	   --inner join TEHSILMST ts on ts.iID=cfa.itehshilNew
+	   inner join APLCTNATTCH attch on attch.sFormName ='AmendmentNameOfCollegePlace' and attch.iFk_AplcndetId= cfa.iPk_ClgAmdId
+	   where cfa.iCollegeId=@Id --4489
+	   --cfa.iDistrictold,cfa.iDistrictNew,ds.sMangalName,ts.sMangalName,cfa.itehshilold,cfa.itehshilNew,cfa.sAddreslineoneold,cfa.sAddreslineoneNew,cfa.sAddresslinetwoold,cfa.sAddresslinetwoNew ,
+	END
+	
+	 if(@Type='GetdetailsCollegeManagement')
+	BEGIN
+	   Select attch.iPk_AplcnAttch,afc.iPk_ClgAmdId ,afc.stypeId,crs.sNameOfClg, afc.iCollegeId,
+	   cast(attch.bAttachFile as nvarchar(max)) [docFile],attch.DocumentContent,attch.DocumentExtension 
+	  ,case 
+	  when doctye.sName='CollegeManagement' then 'Document for Annexure 8 For Change Management'
+	  else 'ChangeManagementCommitte' end sName
+	   from CollegeAmendment afc
+	   --inner join CSTMENUM cs on cs.iPK_CustEnum= afc.iNewSocity_Id
+	   inner join APLCTNBASICINFO crs on crs.iPk_ClgID = afc.iCollegeId
+	   inner join APLCTNATTCH attch on attch.sFormName = 'AmendmentCollegeManagement' and attch.iFk_AplcndetId= afc.iPk_ClgAmdId
+	 inner join CSTMENUM doctye on doctye.iFK_EnumNo=57 and doctye.iPK_CustEnum=attch.iDocTyp
+	   where afc.iCollegeId=@idclgID and attch.iIsActive=1
+	   order by afc.CreateOn desc
+	END
+	 if(@Type='DownloaddetailsCollegeManagement')
+	BEGIN
+	   Select afc.iPk_ClgAmdId ,afc.stypeId,crs.sNameOfClg, afc.iCollegeId,cast(attch.bAttachFile as nvarchar(max)) [docFile],attch.DocumentContent,attch.DocumentExtension from CollegeAmendment afc
+	      --inner join CSTMENUM fc on fc.iPK_CustEnum = afc.iFacilityId
+	   inner join APLCTNBASICINFO crs on crs.iPk_ClgID = afc.iCollegeId
+	   inner join APLCTNATTCH attch on attch.sFormName = 'AmendmentCollegeManagement' and attch.iFk_AplcndetId= afc.iPk_ClgAmdId
+	    where attch.iPk_AplcnAttch=@Id   ---afc.iPk_ClgAmdId=@Id 
+	   order by afc.CreateOn desc     
+
+	   
+	END
+     if(@Type='GetdetailsMergerDetails')
+	BEGIN
+	--    Select attch.iPk_AplcnAttch,afc.iPk_ClgAmdId ,afc.stypeId,crs.sNameOfClg, afc.iCollegeId,
+ --cast(attch.bAttachFile as nvarchar(max)) [docFile],attch.DocumentContent,attch.DocumentExtension,doctye.sName from CollegeAmendment afc
+	--   --inner join CSTMENUM cs on cs.iPK_CustEnum= afc.iNewSocity_Id
+	--   inner join APLCTNBASICINFO crs on crs.iPk_ClgID = afc.iCollegeId
+	--   inner join APLCTNATTCH attch on attch.sFormName = 'MergerInformation' and attch.iFk_AplcndetId= afc.iPk_ClgAmdId
+	--   inner join CSTMENUM doctye on doctye.iFK_EnumNo=47 --and doctye.iPK_CustEnum=attch.iDocTyp
+	--  where afc.iCollegeId=@idclgID and attch.iIsActive=1
+	--  order by afc.CreateOn desc
+	  Select attch.iPk_AplcnAttch,afc.iPk_ClgAmdId ,afc.stypeId,crs.sNameOfClg, afc.iCollegeId,
+   cast(attch.bAttachFile as nvarchar(max)) [docFile],attch.DocumentContent,attch.DocumentExtension
+    ,case 
+   when doctye.sName='ProposalSocietyMerger' then 'Proposal of Society for merger'
+    when doctye.sName='NOCsissued' then 'All NOCs issued in single pdf file'
+	when doctye.sName='LstUnivsityAffiliationCollege' then 'Latest University Affiliation of college'
+	when doctye.sName='Affidavitconsent' then 'NOC of the affiliating university for merger'
+	when doctye.sName='AffidavitParents' then 'Affidavit of Consent of 100% Parents'
+	when doctye.sName='AmendAllNOC' then 'All NOCs issued in single pdf file'
+	when doctye.sName='AmendLatestUniversity' then 'Latest University Affilliation of college'
+	when doctye.sName='AmendNOCAffiliattingTyp' then 'NOC of the affiliating university for merger'
+	when doctye.sName='AmendAffidavitConsentParents' then 'Affidavit of consent of 100% Parents'
+	when doctye.sName='AmendLandCertificateTyp' then 'Land title Certificate'
+	when doctye.sName='AmendBluePrintBuildingTyp' then 'Blue print of building'
+    else 'AmendStaffInformationTyp' end sName
+   from CollegeAmendment afc
+	   --inner join CSTMENUM cs on cs.iPK_CustEnum= afc.iNewSocity_Id
+	   inner join APLCTNBASICINFO crs on crs.iPk_ClgID = afc.iCollegeId
+	   inner join APLCTNATTCH attch on attch.sFormName = 'MergerInformation' and attch.iFk_AplcndetId= afc.iPk_ClgAmdId
+	   inner join CSTMENUM doctye on doctye.iFK_EnumNo=47 and doctye.iPK_CustEnum=attch.iDocTyp
+	  where afc.iCollegeId=@idclgID and attch.iIsActive=1
+	  order by afc.CreateOn desc
+
+	END
+
+	if(@Type='DownloadMergerDetails')
+	BEGIN
+	 --   Select  afc.iPk_ClgAmdId ,afc.stypeId,crs.sNameOfClg, afc.iCollegeId,
+		--cast(attch.bAttachFile as nvarchar(max)) [docFile],attch.DocumentContent,attch.DocumentExtension from CollegeAmendment afc
+	 --  --inner join CSTMENUM fc on fc.iPK_CustEnum = afc.iFacilityId
+	 --  inner join APLCTNBASICINFO crs on crs.iPk_ClgID = afc.iCollegeId
+	 --  inner join APLCTNATTCH attch on attch.sFormName ='MergerInformation' and attch.iFk_AplcndetId= afc.iPk_ClgAmdId
+	 --   where attch.iPk_AplcnAttch=@Id
+	 --  order by afc.CreateOn desc
+	 select  CAST(bAttachFile AS nvarchar(max)) as docFile,DocumentContent,DocumentExtension from APLCTNATTCH where iPk_AplcnAttch=@Id
+	END
+
+	if(@Type='UpdateDownloadDetails')
+	BEGIN
+	    UPDATE APLCTNATTCH SET APLCTNATTCH.iIsActive = '0' FROM APLCTNATTCH
+      inner join CollegeAmendment ON CollegeAmendment.iPk_ClgAmdId=APLCTNATTCH.iFk_AplcndetId WHERE iPk_AplcnAttch=@idclgID and iPk_ClgAmdId=@Id
+	--146 and iPk_ClgAmdId=9
+	--UPDATE APLCTNATTCH SET APLCTNATTCH.iIsActive = '0' FROM APLCTNATTCH
+      --inner join CollegeAmendment ON CollegeAmendment.iPk_ClgAmdId=APLCTNATTCH.iFk_AplcndetId WHERE iPk_AplcnAttch=2102 and iPk_ClgAmdId=5
+	END
+
+	if(@Type='UpdateMerger')
+		BEGIN
+	   Update  APLCTNATTCH SET iIsActive='0' where  sFormName='MergerInformation' and iFK_AplcndetId=@Id
+	END
+	 select 1 as StatusCode , 'Saved Successfully!' as [Message]
+	END TRY     
+	begin catch       
+		EXEC [dbo].[USP_ADMIN_StoreProcedureErrorHandling_Save] 0,0,1 --To log Stored procedure errors    
+		select -1 as StatusCode, 'Check Error - ' + cast(ERROR_Number() as varchar) + ' ' + ERROR_MESSAGE () as [Message],'' AS Body    
+   end catch    
+End
+

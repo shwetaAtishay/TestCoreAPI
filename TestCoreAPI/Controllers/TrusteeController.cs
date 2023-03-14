@@ -432,6 +432,14 @@ namespace TestCoreAPI.Controllers
             return _objTrusteeBL.GetFacilites(GUID, Identity);
 
         }
+        
+        [HttpPost]
+        [Route("CheckDraftValidationForEntry")]
+        public ResponseData CheckDraftValidationForEntry(int clgID, string courses, string subjects)
+        {
+            return _objTrusteeBL.CheckDraftValidationForEntry(clgID, courses, subjects);
+
+        }
     }
 }
 
