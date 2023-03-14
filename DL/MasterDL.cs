@@ -183,40 +183,69 @@ namespace DL
                     SqlParameter[] param = new SqlParameter[1];
                     param[0] = new SqlParameter("@Departid", Departid);
                     ds = BaseFunction.FillDataSet("[dbo].[Usp_Mst_NOC_DepartMapping_View]", param);
+                    if (ds != null && ds.Tables != null && ds.Tables[0].Rows.Count > 0)
+                    {
+                        objList = new List<NOCDEPMAP>();
+
+                        for (int i = 0; i < ds.Tables[0].Rows.Count; i++)
+                        {
+                            NOCDEPMAP obj = new NOCDEPMAP();
+                            obj.NewGuid = ds.Tables[0].Rows[i]["NewGuid"].NulllToString();
+                            //obj.iPk_DeptMapId = ds.Tables[0].Rows[i]["iPk_DeptMapId"].NulllToInt();
+                            obj.DepartName = ds.Tables[0].Rows[i]["DepartName"].NulllToString();
+                            obj.iFk_DeptId = ds.Tables[0].Rows[i]["iFk_DeptId"].NulllToInt();
+                            obj.iFk_NOCDeptId = ds.Tables[0].Rows[i]["iFk_NOCDeptId"].NulllToString();
+                            obj.iFk_NOCTyp = ds.Tables[0].Rows[i]["iFk_NOCTyp"].NulllToString();
+                            //obj.iMode = ds.Tables[0].Rows[i]["iMode"].NulllToInt();
+                            obj.iStts = ds.Tables[0].Rows[i]["iStts"].NulllToInt();
+                            obj.NocDepartmentName = ds.Tables[0].Rows[i]["NocDepartmentName"].NulllToString();
+                            obj.NocDepartmenttype = ds.Tables[0].Rows[i]["NocDepartmenttype"].NulllToString();
+                            //obj.NocSpecialId = ds.Tables[0].Rows[i]["iFk_NocSpecialId"].NulllToInt();
+                            //obj.iSpecialStatus = ds.Tables[0].Rows[i]["iSpecialStatus"].NulllToInt();
+                            //obj.iFk_NocSpecialId = ds.Tables[0].Rows[i]["NocSpecialName"].NulllToString();
+                            objList.Add(obj);
+
+                        }
+                    }
                 }
                 else
                 {
                     ds = BaseFunction.FillDataSet("[dbo].[Usp_Mst_NOC_DepartMapping_View]");
-                }
-                if (ds != null && ds.Tables != null && ds.Tables[0].Rows.Count > 0)
-                {
-                    objList = new List<NOCDEPMAP>();
-
-                    for (int i = 0; i < ds.Tables[0].Rows.Count; i++)
+                    //}
+                    if (ds != null && ds.Tables != null && ds.Tables[0].Rows.Count > 0)
                     {
-                        NOCDEPMAP obj = new NOCDEPMAP();
-                        obj.NewGuid = ds.Tables[0].Rows[i]["NewGuid"].NulllToString();
-                        obj.iPk_DeptMapId = ds.Tables[0].Rows[i]["iPk_DeptMapId"].NulllToInt();
-                        obj.DepartName = ds.Tables[0].Rows[i]["DepartName"].NulllToString();
-                        obj.iFk_DeptId = ds.Tables[0].Rows[i]["iFk_DeptId"].NulllToInt();
-                        obj.iFk_NOCDeptId = ds.Tables[0].Rows[i]["iFk_NOCDeptId"].NulllToString();
-                        obj.iFk_NOCTyp = ds.Tables[0].Rows[i]["iFk_NOCTyp"].NulllToString();
-                        obj.iMode = ds.Tables[0].Rows[i]["iMode"].NulllToInt();
-                        obj.iStts = ds.Tables[0].Rows[i]["iStts"].NulllToInt();
-                        obj.NocDepartmentName = ds.Tables[0].Rows[i]["NocDepartmentName"].NulllToString();
-                        obj.NocDepartmenttype = ds.Tables[0].Rows[i]["NocDepartmenttype"].NulllToString();
-                        obj.NocSpecialId = ds.Tables[0].Rows[i]["iFk_NocSpecialId"].NulllToInt();
-                        obj.iSpecialStatus = ds.Tables[0].Rows[i]["iSpecialStatus"].NulllToInt();
-                        obj.iFk_NocSpecialId = ds.Tables[0].Rows[i]["NocSpecialName"].NulllToString();
-                        objList.Add(obj);
+                        objList = new List<NOCDEPMAP>();
+
+                        for (int i = 0; i < ds.Tables[0].Rows.Count; i++)
+                        {
+                            NOCDEPMAP obj = new NOCDEPMAP();
+                            obj.NewGuid = ds.Tables[0].Rows[i]["NewGuid"].NulllToString();
+                            obj.iPk_DeptMapId = ds.Tables[0].Rows[i]["iPk_DeptMapId"].NulllToInt();
+                            obj.DepartName = ds.Tables[0].Rows[i]["DepartName"].NulllToString();
+                            obj.iFk_DeptId = ds.Tables[0].Rows[i]["iFk_DeptId"].NulllToInt();
+                            obj.iFk_NOCDeptId = ds.Tables[0].Rows[i]["iFk_NOCDeptId"].NulllToString();
+                            obj.iFk_NOCTyp = ds.Tables[0].Rows[i]["iFk_NOCTyp"].NulllToString();
+                            obj.iMode = ds.Tables[0].Rows[i]["iMode"].NulllToInt();
+                            obj.iStts = ds.Tables[0].Rows[i]["iStts"].NulllToInt();
+                            obj.NocDepartmentName = ds.Tables[0].Rows[i]["NocDepartmentName"].NulllToString();
+                            obj.NocDepartmenttype = ds.Tables[0].Rows[i]["NocDepartmenttype"].NulllToString();
+                            obj.NocSpecialId = ds.Tables[0].Rows[i]["iFk_NocSpecialId"].NulllToInt();
+                            obj.iSpecialStatus = ds.Tables[0].Rows[i]["iSpecialStatus"].NulllToInt();
+                            obj.iFk_NocSpecialId = ds.Tables[0].Rows[i]["NocSpecialName"].NulllToString();
+                            objList.Add(obj);
+
+                        }
 
                     }
+                    else
+                    {
+                        objList = null;
+                    }
+                }
+              
 
-                }
-                else
-                {
-                    objList = null;
-                }
+
+
             }
             catch (Exception e)
             {
@@ -860,11 +889,15 @@ namespace DL
         {
             try
             {
-                SqlParameter[] param = new SqlParameter[4];
-                param[0] = new SqlParameter("@Id", Obj.Id);
+
+                SqlParameter[] param = new SqlParameter[7];
+                param[0] = new SqlParameter("@iFk_DeptId", Obj.iFk_DeptId);
                 param[1] = new SqlParameter("@sNewGuid", Obj.sNewGuid);
                 param[2] = new SqlParameter("@dtFormdate", Obj.dtFormdate);
                 param[3] = new SqlParameter("@dtTodate", Obj.dtTodate);
+                param[4] = new SqlParameter("@iFk_NOCDeptId", Obj.iFk_NOCDeptId);
+                param[5] = new SqlParameter("@iMode", Obj.iMode);
+                param[6] = new SqlParameter("@iFk_NOCTyp", Obj.iFk_NOCTyp);
                 DataTable DT = BaseFunction.FillDataTable("[dbo].[Usp_Admin_InsertEvent]", param);
                 if (DT != null)
                 {
@@ -1256,22 +1289,25 @@ namespace DL
                         param2[0] = new SqlParameter("@iFk_FeeMstId", objResponseData.statusCode);
                         DataTable DT2 = BaseFunction.FillDataTable("[dbo].[Usp_Admin_DeleteFeeTRN]", param2);
                         //objResponseData.Message = DT.Rows[0]["Message"].ToString();
-                        foreach (var item in Mst.feeTrn)
+                        if (Mst.feeTrn != null)
                         {
-                            SqlParameter[] param1 = new SqlParameter[10];
+                            foreach (var item in Mst.feeTrn)
+                            {
+                                SqlParameter[] param1 = new SqlParameter[10];
 
-                            param1[0] = new SqlParameter("@iPK_id", '0');
-                            param1[1] = new SqlParameter("@iFk_DeptID", item.iFk_DeptID);
-                            param1[2] = new SqlParameter("@iFK_AppTypID", item.iFK_AppTypID);
-                            param1[3] = new SqlParameter("@iFK_FrmID", item.iFK_FrmID);
-                            param1[4] = new SqlParameter("@iFk_FyID", '1');
-                            param1[5] = new SqlParameter("@dCharges", item.dCharges);
-                            param1[6] = new SqlParameter("@iFk_FeeMstId", objResponseData.statusCode);
-                            param1[7] = new SqlParameter("@sGuidid", item.sGuidid);
-                            param1[8] = new SqlParameter("@iCaseId", item.CaseId);
-                            param1[9] = new SqlParameter("@itype", item.type);
+                                param1[0] = new SqlParameter("@iPK_id", '0');
+                                param1[1] = new SqlParameter("@iFk_DeptID", item.iFk_DeptID);
+                                param1[2] = new SqlParameter("@iFK_AppTypID", item.iFK_AppTypID);
+                                param1[3] = new SqlParameter("@iFK_FrmID", item.iFK_FrmID);
+                                param1[4] = new SqlParameter("@iFk_FyID", '1');
+                                param1[5] = new SqlParameter("@dCharges", item.dCharges);
+                                param1[6] = new SqlParameter("@iFk_FeeMstId", objResponseData.statusCode);
+                                param1[7] = new SqlParameter("@sGuidid", item.sGuidid);
+                                param1[8] = new SqlParameter("@iCaseId", item.CaseId);
+                                param1[9] = new SqlParameter("@itype", item.type);
 
-                            DataTable DT1 = BaseFunction.FillDataTable("[dbo].[Usp_Admin_InsertFeeTRN]", param1);
+                                DataTable DT1 = BaseFunction.FillDataTable("[dbo].[Usp_Admin_InsertFeeTRN]", param1);
+                            }
                         }
                         objResponseData.statusCode = 1;
                         objResponseData.Message = "Record Save SuccessFully|";
