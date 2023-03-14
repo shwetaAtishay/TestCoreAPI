@@ -890,14 +890,14 @@ namespace DL
             try
             {
 
-                SqlParameter[] param = new SqlParameter[7];
+                SqlParameter[] param = new SqlParameter[6];
                 param[0] = new SqlParameter("@iFk_DeptId", Obj.iFk_DeptId);
                 param[1] = new SqlParameter("@sNewGuid", Obj.sNewGuid);
                 param[2] = new SqlParameter("@dtFormdate", Obj.dtFormdate);
                 param[3] = new SqlParameter("@dtTodate", Obj.dtTodate);
                 param[4] = new SqlParameter("@iFk_NOCDeptId", Obj.iFk_NOCDeptId);
-                param[5] = new SqlParameter("@iMode", Obj.iMode);
-                param[6] = new SqlParameter("@iFk_NOCTyp", Obj.iFk_NOCTyp);
+                
+                param[5] = new SqlParameter("@iFk_NOCTyp", Obj.iFk_NOCTyp);
                 DataTable DT = BaseFunction.FillDataTable("[dbo].[Usp_Admin_InsertEvent]", param);
                 if (DT != null)
                 {
