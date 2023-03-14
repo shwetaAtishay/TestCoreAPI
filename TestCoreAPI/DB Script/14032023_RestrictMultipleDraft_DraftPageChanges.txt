@@ -1,0 +1,39 @@
+﻿ALTER Procedure [dbo].[USP_MASTER_DraftApplication_ListNew] --'','Draft'
+@applGUID nvarchar(max) = null,
+@type nvarchar(40) = null,
+@trustID nvarchar(100) = null
+as
+begin
+if(@type='Draft')
+begin
+select distinct
+apl.sGUID as ApplGuid
+,apl.iFK_Finyr
+,iFKTst_ID
+,iFKCLG_ID
+,iFKDEPT_ID
+,upper(apl.sTrstName) as TrustName
+,upper(apl.sClgName) as CollegeName
+,format(apl.dtCRT_On,'dd-MM-yyyy hh:mm:ss tt') as createdDate
+,case when apl.dtSubOn is null then 'In-Process' else 'Completed' end as [Applicationstatus]
+,apl.iNOCStatus as NOCStatus
+,isnull(apl.iSts,0) as iSts
+,apl.iFk_FormTypId clgStatus
+,STUFF((SELECT distinct ', ' +  US.sCorsName 
+    FROM MST_Apln US
+    WHERE US.sGUID = apl.sGUID
+    FOR XML PATH('')), 1, 1, '') as CoursesCollection
+
+,STUFF((SELECT distinct ', ' +  US.sSubjName 
+    FROM MST_Apln US
+    WHERE US.sGUID = apl.sGUID
+    FOR XML PATH('')), 1, 1, '') as SubjectsCollection
+
+from MST_Apln apl inner join APLCTNBASICINFO clg on clg.iPk_ClgID = apl.iFKCLG_ID
+
+where apl.iIsCancled is null and (apl.sGUID = @applGUID or @applGUID ='') and clg.iFk_TrstInfoId= @trustID--and apl.dtSubOn is null
+order by format(apl.dtCRT_On,'dd-MM-yyyy hh:mm:ss tt') desc
+end
+
+end
+______________________________________________________________________________________________________________________________________________________________________
