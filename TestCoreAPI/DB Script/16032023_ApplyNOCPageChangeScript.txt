@@ -1,0 +1,194 @@
+﻿Update the procedure with following conditions "USP_ADMIN_GetMasterDataForDropdown_View"
+
+if(@type='GetFeeForApplication')
+begin
+
+declare @clgID int ,@typeID nvarchar(1000),@tehsil int, @totalFee decimal(18,2),@deptID int,@isbackword int
+
+select @clgID=iFK_ClgID,@typeID =stypeID,@deptID=iFK_DeptID from MST_DeptAppl where sApplID = @menuId
+
+--select @tehsil = iFk_ThslId from APLCTNBASICINFO where iPk_ClgID =@clgID
+--select @isbackword =isnull(iIsBackward,0) from TEHSILMST where iID  = @tehsil
+
+declare @Sdt1 date,@Edt1 date,@Sdt2 date,@Edt2 date,@Sdt3 date,@Edt3 date,@Lfee decimal,@alFee decimal
+select 
+@Sdt1 = dtStartdate1
+,@Edt1 = dtEnddate1
+,@Sdt2 = dtStartdate2
+,@Edt2 = dtEnddate2
+,@Sdt3 = dtStartdate3
+,@Edt3 = dtEnddate3
+,@Lfee = dLateFee
+,@alFee = dAddiLateFee
+from FeeMST where iStts=1 and DeptID = @deptID
+
+declare @feeDetails as table (FormName nvarchar(1000),FeeAmount decimal(18,2))
+declare @feeDetailstemp as table (FormName nvarchar(1000),FeeAmount decimal(18,2),PartyId nvarchar(1000))
+insert into @feeDetails
+	select distinct typeName.sName as formName,fee.dCharges from FeeTRN fee
+	inner join NOCCOUSTEMINFO typeName on fee.iFK_FrmID = typeName.iNocCstId
+	where iFK_FrmID in (select value from string_split(@typeID,','))
+	--union all
+	--select 'Total Amount' as formName,sum(fee.dCharges) from FeeTRN fee
+	--inner join NOCCOUSTEMINFO typeName on fee.iFK_FrmID = typeName.iNocCstId
+	--where iFK_FrmID in (select value from string_split(@typeID,','))
+
+--if(getdate() >= @Sdt1 and getdate()<=@Edt1)
+--begin
+--	--select 'Normal'
+	
+--	--update MST_DeptAppl set dTotalFee = @totalFee where sApplID = @menuId
+--	--select FormName as ID1, FeeAmount as Text from @feeDetails
+--end
+
+if(getdate() >=@Sdt2 and getdate() <=@Edt2)
+begin
+	--select 'late'
+	update @feeDetails set FormName ='Total Amount (Late Fee :'+cast(@Lfee as nvarchar(1000))+')', FeeAmount = FeeAmount+@Lfee where FormName ='Total Amount'
+	
+	--set @totalFee =  (select isnull(FeeAmount,0) from @feeDetails where FormName like '%'+'Total Amount'+'%')
+	update MST_DeptAppl set dTotalFee = @totalFee where sApplID = @menuId
+end
+
+if(getdate() >=@Sdt3 and getdate() <=@Edt3)
+begin
+	update @feeDetails set FormName ='Total Amount (Addition Late Fee :'+cast(@alFee as nvarchar(1000))+')', FeeAmount= FeeAmount+@alFee where FormName ='Total Amount'
+	--set @totalFee =  (select isnull(FeeAmount,0) from @feeDetails where FormName like '%'+'Total Amount'+'%')
+	update MST_DeptAppl set dTotalFee = @totalFee where sApplID = @menuId
+	--select FormName as ID1, FeeAmount as Text from @feeDetails
+	--select 'Aur Late'
+end
+insert into @feeDetailstemp
+select distinct FormName as ID1, FeeAmount as Text,replace(replace(FormName,' ','_'),'-','_') as PartyID  from  @feeDetails
+union all
+select 'Total Amount' as ID1, Sum(FeeAmount) as Text,replace(replace('Total Amount',' ','_'),'-','_') as PartyID  from  @feeDetails
+
+set @totalFee =  (select isnull(FeeAmount,0) from @feeDetailstemp where FormName like '%'+'Total Amount'+'%')
+update MST_DeptAppl set dTotalFee = @totalFee where sApplID = @menuId
+
+select FormName as ID1, FeeAmount as Text,replace(replace(FormName,' ','_'),'-','_') as PartyID from @feeDetailstemp
+--if not exists(select * from MST_PMTHSTRY where sFK_ApplID = @menuId)
+--	begin
+--		insert into MST_PMTHSTRY(sFK_ApplID,iFK_ClgID,dDueAMT)
+--		values(@menuId,@clgID,@totalFee)
+--	end
+
+end
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+if(@type='GetFeeForType')
+begin
+declare @existingNOCID int
+select @existingNOCID =iNocCstId from NOCCOUSTEMINFO where sName='Existing College'
+select iPK_id as Id,isnull(nullif(type,''),'NA') as [ID1], noc.sName as PartyId ,dCharges as Text from FeeTRN fee
+inner join NOCCOUSTEMINFO noc on noc.iNocCstId = fee.iFK_FrmID
+where iFK_FrmID = @menuId and iFK_AppTypID=@existingNOCID and iFk_FeeMstId  = (select iPK_id from FeeMST where iStts is null and NOCApplID=@existingNOCID)
+end
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+if(@type='ApplyNOC_CollegeForDepartment')
+begin
+	  --select distinct iPk_AplcnId as ID, Upper(clg.sNameOfClg) as Text, clg.dtAplcnDate
+	  --from DEPTVSCURS dpt
+	  --inner join APLCTNBASICINFO clg on clg.iPk_ClgID = dpt.iPk_AplcnId
+	  --where iFK_DeptId = @menuId 
+	  --and clg.iPk_ClgID in (select iFKCLG_ID from MST_Apln where iSts =1 and isnull(iIsCancled,0) = 0 and isnull(iIsSub2Dept,0) = 0)
+	  --and clg.iFk_TrstInfoId = @PartyId
+	  --order by clg.dtAplcnDate
+	  select distinct iPk_ClgID as ID, Upper(concat(clg.sNameOfClg,' [ ',apl.iFk_FormTypId,' ]'))  as Text
+	  from APLCTNBASICINFO clg 
+	  inner join MST_Apln apl on apl.iFKCLG_ID = clg.iPk_ClgID and iSts =1 and isnull(iIsCancled,0) = 0 and isnull(iIsSub2Dept,0) = 0
+	  where iDepartment = @menuId and clg.iFk_TrstInfoId = @PartyId
+end
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+if(@type='ApplyNOC_NOCCategory')
+begin
+	select distinct cstNoc.iNocCstId as ID,cstNoc.sName as Text,rtrim(ltrim(Replace(cstNoc.sName,' ','_'))) as ID1 from NOCDEPMAP dNoc 
+	inner join NOCCOUSTEMINFO cstNoc on dNoc.iFk_NOCDeptId = cstNoc.iNocCstId
+	where cstNoc.iTypid =1 and dNoc.iFk_DeptId = @menuId
+end
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+if(@type='ApplyNOC_NOCForms')
+begin
+	--select distinct dNoc.iFk_NOCTyp as ID,cstNoc.sName as Text,'#div'+rtrim(ltrim(Replace(cstNoc.sName,' ','_'))) as ID1 from NOCDEPMAP dNoc 
+	--inner join NOCCOUSTEMINFO cstNoc on  cstNoc.iNocCstId = dNoc.iFk_NOCTyp 
+	--where  dNoc.iFk_DeptId = @menuId and dNoc.iFk_NOCDeptId = @PartyId
+
+select distinct Ndept.iFk_NOCTyp as ID, NMst.sName as Text, '#div' + replace(NMst.sName,' ','_') as ID1 ,
+case when(cast(ev.dtStrDate as date)<=cast(getdate() as date) and cast(ev.dtEndDate as date)>=cast(getdate() as date)) then '1' else '0' end as PartyID
+from NOCDEPMAP Ndept
+inner join NOCCOUSTEMINFO NMst on Nmst.iNocCstId= Ndept.iFk_NOCTyp
+left join EventMst ev on ev.iFk_NOCTyp =  Nmst.iNocCstId and ev.iStts=1
+where Ndept.iFk_NOCDeptId in(25,50) and Ndept.iFk_DeptId=@PartyId
+--where Ndept.iFk_NOCDeptId = (select iNocCstId from NOCCOUSTEMINFO where sName= @menuId) and Ndept.iFk_DeptId=@PartyId
+
+end
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+if(@type='ApplyNOC_NewCourse_GetCourse')
+begin
+
+;with CoursesForNewCourse
+as(
+select distinct iFK_CORS_ID as ID, corsEnum.sName as Text,case when dept.Fk_StatusId = 1 then 'Running' when dept.Fk_StatusId = 3 then 'New Subject' end as ID1 from MST_Apln apl
+inner join CSTMENUM corsEnum  on corsEnum.iPK_CustEnum = apl.iFK_CORS_ID
+inner join DEPTVSCURS dept on dept.iFK_CourseId = apl.iFK_CORS_ID and dept.iPk_AplcnId= apl.iFKCLG_ID and dept.iFk_TrstInfoId=apl.iFKTst_ID and Fk_StatusId in (3)
+where iFKCLG_ID = @menuId and isnull(apl.iSts,0) =1 and isnull(apl.iIsCancled,0) = 0 and isnull(apl.iIsSub2Dept,0) = 0)
+
+select ID,Text,ID1 from CoursesForNewCourse where ID1 = 'New Subject' and ID not in(select ID from CoursesForNewCourse where ID1 = 'Running')
+
+end
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+if(@type='ApplyNOC_NewCourse_GetSubject')
+begin
+	select distinct cast(dpt.iFK_CORS_ID as nvarchar(10))+'-'+ cast(dpt.iFK_Subj_ID as nvarchar(10)) as ID,upper(dpt.sCorsName)+' : '+UPPER(dpt.sSubjName) as Text from MST_Apln dpt
+	where iFK_CORS_ID = @menuId and iFKCLG_ID=@PartyId and iFKTst_ID=@Id  and dpt.iSts =1 and isnull(dpt.iIsCancled,0) = 0 and isnull(dpt.iIsSub2Dept,0) = 0 
+
+end
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+if(@type='ApplyNOC_NewSubject_GetCourse')
+begin
+
+;with CoursesForAddCourse
+as(
+select distinct iFK_CORS_ID as ID, corsEnum.sName as Text,case when dept.Fk_StatusId = 1 then 'Running' when dept.Fk_StatusId = 3 then 'New Subject' end as ID1 from MST_Apln apl
+inner join CSTMENUM corsEnum  on corsEnum.iPK_CustEnum = apl.iFK_CORS_ID
+inner join DEPTVSCURS dept on dept.iFK_CourseId = apl.iFK_CORS_ID and dept.iPk_AplcnId= apl.iFKCLG_ID and dept.iFk_TrstInfoId=apl.iFKTst_ID and Fk_StatusId in (3)
+where iFKCLG_ID = @menuId and isnull(apl.iSts,0) =1 and isnull(apl.iIsCancled,0) = 0 and isnull(apl.iIsSub2Dept,0) = 0)
+
+select ID,Text,ID1 from CoursesForAddCourse where ID1 = 'New Subject'
+end
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+if(@type='ApplyNOC_NewSubject_GetSubject')
+begin
+select distinct cast(apl.iFK_CORS_ID as nvarchar(10))+'-'+ cast(apl.iFK_Subj_ID as nvarchar(10)) as ID,upper(apl.sCorsName)+' : '+UPPER(apl.sSubjName) as Text  from MST_Apln apl
+inner join DEPTVSCURS dept on dept.iFK_CourseId = apl.iFK_CORS_ID and dept.iPk_AplcnId= apl.iFKCLG_ID and dept.iFk_TrstInfoId=apl.iFKTst_ID and Fk_StatusId =3
+where iFK_CORS_ID =@menuId and iFKCLG_ID=@PartyId and iFKTst_ID=@Id  and apl.iSts =1 and isnull(apl.iIsCancled,0) = 0 and isnull(apl.iIsSub2Dept,0) = 0 
+
+end
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+if(@type='ApplyNOC_TNOCExtention')
+begin
+;with TNOCExtentionData
+as(
+select distinct isnull(ONOC.iPK_Id,0) iPK_Id,apl.iFK_CORS_ID, apl.sCorsName,apl.iFK_Subj_ID,apl.sSubjName,dept.Fk_StatusId,ONOC.sNOCNo,format(ONOC.dtNOCRcvdOn,'dd-MM-yyyy') as dtNOCRcvdOn,cast(ONOC.sAttachFile as nvarchar(max)) sAttachFile , DENSE_RANK() OVER(PARTITION BY apl.iFK_CORS_ID, apl.sCorsName,apl.iFK_Subj_ID,apl.sSubjName,dept.Fk_StatusId ORDER BY ONOC.dtNOCRcvdOn desc)       AS [RANK] from MST_Apln apl
+inner join DEPTVSCURS dept on dept.iFK_CourseId = apl.iFK_CORS_ID and dept.iPk_AplcnId= apl.iFKCLG_ID and dept.iFk_TrstInfoId=apl.iFKTst_ID and Fk_StatusId = 1
+left join MST_OLD_NOC ONOC on ONOC.iFk_CORSID = apl.iFK_CORS_ID and ONOC.iFk_ClgID= apl.iFKCLG_ID and ONOC.iFk_SbjID=apl.iFK_Subj_ID 
+where iFKCLG_ID=@menuId and iFKTst_ID=@PartyId  and apl.iSts =1 and isnull(apl.iIsCancled,0) = 0 and isnull(apl.iIsSub2Dept,0) = 0 
+)
+select * from TNOCExtentionData T  where [RANK]=1
+
+end
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+if(@type='ApplyNOC_PNOC')
+begin
+;with PNOC
+as(
+select distinct isnull(ONOC.iPK_Id,0) iPK_Id,apl.iFK_CORS_ID, concat(apl.sCorsName, ' [',dptCrs.sDegree,']') as sCorsName,apl.iFK_Subj_ID,apl.sSubjName,dept.Fk_StatusId,ONOC.sNOCNo,format(ONOC.dtNOCRcvdOn,'dd-MM-yyyy') as dtNOCRcvdOn,cast(ONOC.sAttachFile as nvarchar(max)) sAttachFile , DENSE_RANK() OVER(PARTITION BY apl.iFK_CORS_ID, apl.sCorsName,apl.iFK_Subj_ID,apl.sSubjName,dept.Fk_StatusId ORDER BY ONOC.dtNOCRcvdOn desc)       AS [RANK] 
+from MST_Apln apl
+inner join DEPTVSCURS dept on dept.iFK_CourseId = apl.iFK_CORS_ID and dept.iPk_AplcnId= apl.iFKCLG_ID and dept.iFk_TrstInfoId=apl.iFKTst_ID and Fk_StatusId in (1,3)
+left join MST_OLD_NOC ONOC on ONOC.iFk_CORSID = apl.iFK_CORS_ID and ONOC.iFk_ClgID= apl.iFKCLG_ID and ONOC.iFk_SbjID=apl.iFK_Subj_ID 
+inner join DEPTCOURSEMAP dptCrs on dptCrs.Fk_CourseId = apl.iFK_CORS_ID and dptCrs.Fk_SubjectId = apl.iFK_Subj_ID
+where iFKCLG_ID=@menuId and iFKTst_ID=@PartyId  and apl.iSts =1 and isnull(apl.iIsCancled,0) = 0 and isnull(apl.iIsSub2Dept,0) = 0 
+)
+select * from PNOC P  where [RANK]=1
+
+end
