@@ -324,7 +324,7 @@ namespace DL
             catch (Exception ex)
             {
                 objListdoc = null;
-                ExceptionLogDL.WriteExceptionDB(ex, "NA", "api", "TrusteeDL:GetTrustDropDownList", "UNOCapi", "NA");                
+                ExceptionLogDL.WriteExceptionDB(ex, "NA", "api", "TrusteeDL:GetTrustDropDownList", "UNOCapi", "NA");
             }
             return objListdoc;
         }
@@ -385,7 +385,7 @@ namespace DL
             catch (Exception ex)
             {
                 objResponseData.Messsage = CustomMessage.EXCEPTIONOCCURRED;
-                objResponseData.ResponseCode =CustomMessage.EXCEPTIONOCCURRED_RESPONSECODE.ToString();
+                objResponseData.ResponseCode = CustomMessage.EXCEPTIONOCCURRED_RESPONSECODE.ToString();
                 ExceptionLogDL.WriteExceptionDB(ex, "NA", "api", "TrusteeDL:TrustInfoList", "UNOCapi", "NA");
                 return _result;
             }
@@ -675,7 +675,7 @@ namespace DL
             {
                 objListdoc = null;
                 ExceptionLogDL.WriteExceptionDB(ex, "NA", "api", "TrusteeDL:GetDepartment", "UNOCapi", "NA");
-                
+
             }
             return objListdoc;
         }
@@ -925,7 +925,7 @@ namespace DL
                 {
                     objResponseData.Messsage = CustomMessage.NORECORDFOUND;
                     objResponseData.ResponseCode = CustomMessage.NORECORDFOUND_RESPONSECODE.ToString();
-                    
+
                     return objResponseData;
                 }
 
@@ -1039,7 +1039,7 @@ namespace DL
                 return objResponseData;
             }
         }
-        
+
         public ErrorBO TrustVerification(TrusteeBO.TrusteeInfo modal)
         {
             DataSet ds = new DataSet();
@@ -1245,7 +1245,7 @@ namespace DL
                 return objResponseData;
             }
         }
-        
+
         public ErrorBO TrustVerificationAPI(TrustRoot _obj)
         {
             #region Save Trust Detail
@@ -1680,7 +1680,7 @@ namespace DL
                                 SaveTransationData(applicationNumber, item);
                             }
                         }
-                        
+
                         if (model.subjData.Count > 0 && model.subjData != null)
                         {
                             foreach (var item in model.subjData)
@@ -2451,10 +2451,10 @@ namespace DL
                 return _result;
             }
         }
-        
+
         public ResponseData CheckDraftValidationForEntry(int clgID, string courses, string subjects)
         {
-           
+
             DataSet ds = new DataSet();
             try
             {
