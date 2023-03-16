@@ -19,7 +19,7 @@ namespace DL
             DataSet ds = new DataSet();
             try
             {
-                SqlParameter[] param = new SqlParameter[35];
+                 SqlParameter[] param = new SqlParameter[35];
                 param[0] = new SqlParameter("@Type", "Insert");
                 param[1] = new SqlParameter("@Name", _obj.Name);
                 param[2] = new SqlParameter("@Email", _obj.Email);
@@ -134,14 +134,22 @@ namespace DL
                                     OccupationId = DR["OccupationId"].NulllToString(),
                                     GenderId = DR["GenderId"].NulllToString(),
                                     FatherName = DR["FatherName"].NulllToString(),
-                                    CollageId = DR["CollageId"].NulllToString(),
+                                    CollageName = DR["CollageName"].NulllToString(),
                                     Educationfile = DR["Educationfile"].NulllToString(),
                                     signaturefile = DR["signaturefile"].NulllToString(),
                                     Letterfile = DR["Letterfile"].NulllToString(),
+                                    CollageId = DR["collegeId"].NulllToString(),
+
                                 });
                             }
                         }
-
+                        if(ds.Tables[2].Rows.Count > 0)
+                        {
+                            _result.Add(new TrusteeBO.Trustee
+                            {
+                                FemaleCota = ds.Tables[2].Rows[0]["FemaleCota"].NulllToDecimal()
+                            });
+                        }
                         return _result;
                     }
                     else
@@ -323,7 +331,7 @@ namespace DL
             catch (Exception ex)
             {
                 objListdoc = null;
-                ExceptionLogDL.WriteExceptionDB(ex, "NA", "api", "TrusteeDL:GetTrustDropDownList", "UNOCapi", "NA");                
+                ExceptionLogDL.WriteExceptionDB(ex, "NA", "api", "TrusteeDL:GetTrustDropDownList", "UNOCapi", "NA");
             }
             return objListdoc;
         }
@@ -384,7 +392,7 @@ namespace DL
             catch (Exception ex)
             {
                 objResponseData.Messsage = CustomMessage.EXCEPTIONOCCURRED;
-                objResponseData.ResponseCode =CustomMessage.EXCEPTIONOCCURRED_RESPONSECODE.ToString();
+                objResponseData.ResponseCode = CustomMessage.EXCEPTIONOCCURRED_RESPONSECODE.ToString();
                 ExceptionLogDL.WriteExceptionDB(ex, "NA", "api", "TrusteeDL:TrustInfoList", "UNOCapi", "NA");
                 return _result;
             }
@@ -674,7 +682,7 @@ namespace DL
             {
                 objListdoc = null;
                 ExceptionLogDL.WriteExceptionDB(ex, "NA", "api", "TrusteeDL:GetDepartment", "UNOCapi", "NA");
-                
+
             }
             return objListdoc;
         }
@@ -924,7 +932,7 @@ namespace DL
                 {
                     objResponseData.Messsage = CustomMessage.NORECORDFOUND;
                     objResponseData.ResponseCode = CustomMessage.NORECORDFOUND_RESPONSECODE.ToString();
-                    
+
                     return objResponseData;
                 }
 
@@ -1038,7 +1046,7 @@ namespace DL
                 return objResponseData;
             }
         }
-        
+
         public ErrorBO TrustVerification(TrusteeBO.TrusteeInfo modal)
         {
             DataSet ds = new DataSet();
@@ -1244,7 +1252,7 @@ namespace DL
                 return objResponseData;
             }
         }
-        
+
         public ErrorBO TrustVerificationAPI(TrustRoot _obj)
         {
             #region Save Trust Detail
@@ -1679,7 +1687,7 @@ namespace DL
                                 SaveTransationData(applicationNumber, item);
                             }
                         }
-                        
+
                         if (model.subjData.Count > 0 && model.subjData != null)
                         {
                             foreach (var item in model.subjData)
@@ -2450,5 +2458,131 @@ namespace DL
                 return _result;
             }
         }
+
+        public ResponseData CheckDraftValidationForEntry(int clgID, string courses, string subjects)
+        {
+
+            DataSet ds = new DataSet();
+            try
+            {
+                SqlParameter[] param = new SqlParameter[3];
+                param[0] = new SqlParameter("@courseID", courses);
+                param[1] = new SqlParameter("@subjectID", subjects);
+                param[2] = new SqlParameter("@clg", clgID);
+                ds = BaseFunction.FillDataSet("[dbo].[USP_ADMIN_CheckValidateDraftEntry_select]", param);
+                if (ds != null && ds.Tables != null && ds.Tables.Count > 0)
+                {
+                    if (ds.Tables[0].Rows.Count > 0)
+                    {
+                        objResponseData1.statusCode = ds.Tables[0].Rows[0]["allow"].NulllToInt();
+                        objResponseData1.Message = ds.Tables[0].Rows[0]["Courses"].NulllToString();
+                        objResponseData1.ResponseCode = ds.Tables[0].Rows[0]["Subjects"].NulllToString();
+
+                    }
+                    else
+                    {
+                        objResponseData1.statusCode = ds.Tables[0].Rows[0]["allow"].NulllToInt();
+                        objResponseData1.Message = ds.Tables[0].Rows[0]["Courses"].NulllToString();
+                        objResponseData1.ResponseCode = ds.Tables[0].Rows[0]["Subjects"].NulllToString();
+                    }
+                }
+                else
+                {
+                    objResponseData1.statusCode = 0;
+                    objResponseData1.Message = CustomMessage.NORECORDFOUND;
+                    objResponseData1.ResponseCode = CustomMessage.NORECORDFOUND_RESPONSECODE.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                objResponseData1.statusCode = 0;
+                objResponseData1.Message = CustomMessage.EXCEPTIONOCCURRED;
+                objResponseData1.ResponseCode = CustomMessage.EXCEPTIONOCCURRED_RESPONSECODE.ToString();
+                //ExceptionLogDL.WriteExceptionDB(ex, "NA", "api", "TrusteeDL:DocumentDetail", "UNOCapi", "NA");
+            }
+
+            return objResponseData1;
+        }
+
+        public ResponseData WomenCount(string CollegeId, string TrustId)
+        {
+            
+            DataSet ds = new DataSet();
+            try
+            {
+                SqlParameter[] param = new SqlParameter[2];
+                param[0] = new SqlParameter("@CollageId", CollegeId);
+                param[1] = new SqlParameter("@TrustId", TrustId);
+                ds = BaseFunction.FillDataSet("[dbo].[USP_ADMIN_Trustee_WomenCount]", param);
+                if (ds != null && ds.Tables != null && ds.Tables.Count > 0)
+                {
+                    if (ds.Tables[0].Rows.Count > 0)
+                    {
+                        
+                        objResponseData1.FemaleCount = ds.Tables[0].Rows[0]["WomenCount"].NulllToDecimal();
+
+
+                    }
+                    
+                }
+                else
+                {
+                    objResponseData1.statusCode = 0;
+                    objResponseData1.Message = CustomMessage.NORECORDFOUND;
+                    objResponseData1.ResponseCode = CustomMessage.NORECORDFOUND_RESPONSECODE.ToString();
+                }
+               
+            }
+            catch (Exception ex)
+            {
+                objResponseData1.statusCode = 0;
+                objResponseData1.Message = CustomMessage.EXCEPTIONOCCURRED;
+                objResponseData1.ResponseCode = CustomMessage.EXCEPTIONOCCURRED_RESPONSECODE.ToString();
+                //ExceptionLogDL.WriteExceptionDB(ex, "NA", "api", "TrusteeDL:DocumentDetail", "UNOCapi", "NA");
+            }
+            return objResponseData1;
+
+        }
+        public ResponseData IsPrimeStatus(string trustId, string CollegeId, string IsPrime)
+        {
+
+            DataSet ds = new DataSet();
+            try
+            {
+                SqlParameter[] param = new SqlParameter[4];
+                param[0] = new SqlParameter("@Type", "IsPrimary");
+                param[1] = new SqlParameter("@TrustInfoId", trustId);
+                param[2] = new SqlParameter("@CollageId", CollegeId);
+                param[3] = new SqlParameter("@isPrimary", IsPrime);
+                
+                ds = BaseFunction.FillDataSet("[dbo].[USP_ADMIN_Trustee_SaveView]", param);
+                if (ds != null && ds.Tables != null && ds.Tables.Count > 0)
+                {
+                    if (ds.Tables[0].Rows.Count > 0)
+                    {
+                        objResponseData1.Message = ds.Tables[0].Rows[0]["Message"].NulllToString();
+                        objResponseData1.ResponseCode = ds.Tables[0].Rows[0]["Flag"].NulllToString();
+                    }
+
+                }
+                else
+                {
+                    objResponseData1.statusCode = 0;
+                    objResponseData1.Message = "Not Record Pls Insert Record";
+                    objResponseData1.ResponseCode = CustomMessage.NORECORDFOUND_RESPONSECODE.ToString();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                objResponseData1.statusCode = 0;
+                objResponseData1.Message = CustomMessage.EXCEPTIONOCCURRED;
+                objResponseData1.ResponseCode = CustomMessage.EXCEPTIONOCCURRED_RESPONSECODE.ToString();
+                //ExceptionLogDL.WriteExceptionDB(ex, "NA", "api", "TrusteeDL:DocumentDetail", "UNOCapi", "NA");
+            }
+            return objResponseData1;
+
+        }
+
     }
 }

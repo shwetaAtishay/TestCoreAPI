@@ -175,9 +175,9 @@ namespace BL
         {
             return objUserDL.GetPermissionDetails(RoleId, DepartmentId);
         }
-        public ResponseData GetMenusAndSubmenus(string Type, string MenuId, string PartyId)
+        public ResponseData GetMenusAndSubmenus(string Type, string MenuId, string PartyId,int trustid)
         {
-            return objUserDL.GetMenusAndSubmenus(Type, MenuId, PartyId);
+            return objUserDL.GetMenusAndSubmenus(Type, MenuId, PartyId,trustid);
         }
         public ResponseData UpdateDisplayID(string ID)
         {

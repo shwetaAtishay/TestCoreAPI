@@ -318,11 +318,11 @@ namespace TestCoreAPI.Controllers
 
         [HttpPost]
         [Route("GetData")]
-        public ResponseData GetMenusAndSubmenus(string Type, string MenuId, string PartyId = null)
+        public ResponseData GetMenusAndSubmenus(string Type, string MenuId, string PartyId = null,int trustid=0)
         {
             try
             {
-                var objResponseData = objAdminBL.GetMenusAndSubmenus(Type, MenuId, PartyId);
+                var objResponseData = objAdminBL.GetMenusAndSubmenus(Type, MenuId, PartyId, trustid);
                 return objResponseData;
             }
             catch (Exception ex)

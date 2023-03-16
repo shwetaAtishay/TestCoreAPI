@@ -1221,7 +1221,7 @@ namespace DL
                     ds = BaseFunction.FillDataSet("[dbo].[Usp_Mst_Fee_DepartApplication_Data]", param);
                 }
 
-               
+
 
                 if (ds != null && ds.Tables != null && ds.Tables[0].Rows.Count > 0)
                 {

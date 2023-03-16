@@ -26,6 +26,7 @@ namespace BO.Models
         public string JWT { get; set; }
         public string RegistrationId { get; set; }
         public JObject Data1 { get; set; }
+        public decimal FemaleCount { get; set; }
     }
     public class MobileVerificationSettings
     {

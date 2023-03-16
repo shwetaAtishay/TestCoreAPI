@@ -1,89 +1,1174 @@
-﻿----Anil ----
+﻿ALTER TABLE LNDINFMST
+ADD dtAffidavitDate date;	
+
+ALTER TABLE LNDINFMST
+ADD dtNOTAffidavitDate date;	
+
+-----------------------------------------------------------------------
+
+INSERT [dbo].[CSTMENUM] ([iFK_EnumNo], [sName], [sCrtdBy], [dtCrtdDt], [sUpdtBy], [dtUpdtOn], [sPrtyId], [iId], [iIsActv], [sTyp]) VALUES (32, N'Order Document', N'1', CAST(N'2023-03-11T10:21:18.537' AS DateTime), NULL, CAST(N'2023-03-11T10:21:18.537' AS DateTime), NULL, NULL, 1, NULL)
+INSERT [dbo].[CSTMENUM] ([iFK_EnumNo], [sName], [sCrtdBy], [dtCrtdDt], [sUpdtBy], [dtUpdtOn], [sPrtyId], [iId], [iIsActv], [sTyp]) VALUES (32, N'AffidavitNotDoc', N'1', CAST(N'2023-03-11T10:21:18.537' AS DateTime), NULL, CAST(N'2023-03-11T10:21:18.537' AS DateTime), NULL, NULL, 1, NULL)
+
+---------------------------------------------------------------------------------------------
+Only For LandInfo Code Changes Full Sp me sa 
 
 
-Create proc [dbo].[USP_Master_Degrees_List]
+
+ALTER Procedure [dbo].[USP_ADMIN_GetMasterDataForDropdown_View] --'UserTypeList',null,null
+
+@type nvarchar(100) = null,
+@menuId nvarchar(max) = null, --- Because we are passign the GUID for Application number
+@PartyId nvarchar(20)=null,
+@Id BIGINT = NULL
 as
-begin
-
-select iPK_CustEnum Id,sName Text from CSTMENUM where iFK_EnumNo=46 and iIsActv=1
-
-end
-
-
----------------------------------
-
-ALTER proc [dbo].[USP_Master_Course_List]
-(
-@Id int=null
+if(@type='CourseList')
+  begin
+  SELECT C.iPK_CustEnum Id,C.sName Text
+FROM CSTMENUM C  
+--  left JOIN
+--(
+-- select distinct S.sSubjectName Id ,C.sName Text  from SUBMAST S inner join  CSTMENUM C on C.iPK_CustEnum=S.sSubjectName where S.iPk_ClgID=50 
+--) T ON T.Id!=C.iPK_CustEnum 
+where C.iFK_EnumNo=43 and C.iPK_CustEnum Not IN(select distinct S.sSubjectName Id   from SUBMAST S inner join  CSTMENUM C on C.iPK_CustEnum=S.sSubjectName where S.iPk_ClgID=Cast(@menuId as int)
 )
-as
+order by C.iPK_CustEnum  
+  End
+if(@type='SubjectList')
+  begin
+  SELECT C.iPK_CustEnum Id,C.sName Text
+FROM CSTMENUM C  
+--  left JOIN
+--(
+-- select distinct S.sSubjectName Id ,C.sName Text  from SUBMAST S inner join  CSTMENUM C on C.iPK_CustEnum=S.sSubjectName where S.iPk_ClgID=50 
+--) T ON T.Id!=C.iPK_CustEnum 
+where C.iFK_EnumNo=43
+order by C.iPK_CustEnum  
+  End
+
+if(@type='MenuList')
+	begin
+		select 0 as Id, 'Select Menu' as Text
+		union
+		select  iPK_MenuId as Id, sMenuName as Text  from MENUMST where iStatus<>2
+	end
+
+if(@type='Submenus')
+	begin
+		select iDsplyOrdId as Id, sSubMnuName as Text,iSubMnuId as ID1 from SUBMENUMST where iFK_MnuId =cast(@menuId as int) and  iStatus<>2 order by iDsplyOrdId 
+	end
+
+if(@type='DepartmentList')
+	begin
+		select iPK_DeptId as DepartmentID,sDeptName as DepartmentName,format(dtCrtdDt,'dd-MM-yyyy hh:mm:ss tt') as CreatedDate, iStts [Status] from DPETMST where iStts<>2
+	end
+
+if(@type='DepartmentSingle')
+	begin
+		select iPK_DeptId as DepartmentID,sDeptName as DepartmentName from DPETMST where iPK_DeptId = cast(@menuId as int) and iStts<>2
+	end
+
+if(@type='GroupList')
+	begin
+		select g.biPK_MSTId ID,iPK_GrpId GroupID,sGrpName GroupName,m.sMenuName as Menu,g.iMenuId,sm.sSubMnuName as Submenu,g.iSubMenuId,format(g.dtCrtdDt,'dd-MM-yyyy hh:mm:ss tt') as CreatedDate, g.iStatus  as Status
+		from GRPMST g 
+		left join MENUMST m on m.iPK_MenuId = g.iMenuId
+		left join SUBMENUMST sm on sm.iSubMnuId = g.iSubMenuId
+		where g.iStatus<>2 and (g.sPartyCode= @PartyId or @PartyId Is Null)
+	end
+
+if(@type='GroupSingle')
+	begin
+		select g.biPK_MSTId,iPK_GrpId,sGrpName,m.sMenuName as Menu,g.iMenuId,sm.sSubMnuName as Submenu,g.iSubMenuId,format(g.dtCrtdDt,'dd-MM-yyyy hh:mm:ss tt') as CreatedDate, g.iStatus 
+		from GRPMST g 
+		left join MENUMST m on m.iPK_MenuId = g.iMenuId
+		left join SUBMENUMST sm on sm.iSubMnuId = g.iSubMenuId
+		where biPK_MSTId = cast(@menuId as int) and g.iStatus<>2
+	end
+
+if(@type='RoleList')
+	begin
+		select distinct P.iRoleId as Id,R.sRolName as Text from ROLEMST R 
+		inner join PRTYMST P on P.iRoleId = R.iPk_RolId
+	end
+
+
+if(@type='UserTypeList')
+	begin
+		select iId as Id,sName as text from CSTMENUM where iFK_EnumNo =7 order by iId
+	end
+
+if(@type='NotificationTypeMaster')
+	begin
+		select iId as Id,sName as Text from CSTMENUM where iFK_EnumNo = 14
+	end
+
+if(@type='NotificationFlowDirection')
+	begin
+		select iId as Id,sName as Text from CSTMENUM where iFK_EnumNo = 23
+	end
+		
+if(@type='SelectpartyMaster')
+	begin
+		select * from PRTYMST
+	end
+
+if(@type='ServiceProvider')
+	begin
+		Select iId,sName as Text from CSTMENUM where iFK_EnumNo = 21
+	end
+
+if(@type='Templates')
+	begin
+		Select iId,sName as Text from CSTMENUM where iFK_EnumNo = 22
+	end
+
+if(@type='GetWalletAmount')
+	begin
+		Select  sFK_PrtyCode, dMainWalltBalnc from WLLTMST where sFK_PrtyCode = @menuId and iIsActv =1
+	end
+
+if(@type='GroupsForUser')
+	begin
+		Declare @role int =0,
+				@dept int = 0
+
+		select @role=iRoleId,@dept=iDeptId from PRTYMST where sPK_PrtyCode = @menuId
+
+		select distinct g.iPK_GrpId Id, g.sGrpName from ROLDEPT M 
+		inner join GRPMST g on M.iGrpId = g.iPK_GrpId
+		where iRoleId = @role and iDeptId =@dept and g.iStatus<>2
+	end
+
+if(@type ='ChargeType')
+BEGIN
+select C.iId Id,C.sName text  from RATEMST R inner join CSTMENUM C
+on C.iId=R.iChngTyp and C.iFK_EnumNo=1 
+where R.iIsActv=1 AND R.iFK_HrdWarSrvicId=@Id
+END
+if(@type ='UserType')
+BEGIN
+select iId Id,sName as [text] from CSTMENUM where iFK_EnumNo =7 order by iId
+END
+
+if(@type= 'Department')
+	begin
+		Select 0 Id,'Select Department' text
+		union
+		Select iPK_DeptId Id,sDeptName text from DPETMST where iStts=1 
+	end
+
+if(@type= 'Group')
+	begin
+		Select 0 Id,'Select Group' text
+		union
+		
+		Select iPK_GrpId Id,sGrpName text from GRPMST where iStatus=1 and (@PartyId is null or sPartyCode=@PartyId)
+	end
+
+if(@type= 'Role')
+	begin
+		Select 0 Id,'Select Role' text
+		union
+		Select iPk_RolId Id,sRolName text from ROLEMST where iStatus=1 and (@PartyId is null or sCrtdByPrtyCode=@PartyId)
+	end
+	if(@type='TargetDetails')
+	begin
+		select TRGMST.lPK_Id ID,[SRVCMST].sName CatName,	iCategoryId as CategoryId	,dTrgAmt as TargetAmount	,sTrgPeriod as TargetPeriod	,dtStrDate as StartingDate	,dtStrTRGDate as StartTargetDate	,iTargetType as TargetType ,iStatus as Status from TRGMST 
+				
+		 INNER JOIN SRVCMST ON TRGMST.iCategoryId = SRVCMST.iPK_CatId
+		 where lPK_Id = lPK_Id 
+		and TRGMST.iStatus<>2
+	end
+	if(@type='BankDetails')
+	begin
+	select  lPK_Id as ID ,sBankName as BankName ,sIFSC as IFSC ,sAccountNumber as AccountNumber , sAccountHolderName as AccountHolderName ,sMobileNumber as MobileNumber,iStatus as Status from BANKMST
+	
+		 where lPK_Id = lPK_Id 
+		and BANKMST.iStatus<>2
+	end
+if(@type='CollegeType')
+	begin
+		Select iPK_CustEnum as ID,sName as Text from CSTMENUM where iFK_EnumNo =24
+	end
+
+if(@type='ProjectSource')
+	begin
+		Select iId as ID,sName as Text from CSTMENUM where iFK_EnumNo = 25
+	end
+
+	if(@type ='University')
+BEGIN
+select * from(
+Select 0 Id,'Not Applicable' [text]
+union
+select iPK_CustEnum Id,sName as [text] from CSTMENUM where iFK_EnumNo =26
+union
+select iPK_CustEnum Id,sName as [text] from CSTMENUM where iFK_EnumNo =27) as dt1 order by dt1.text
+END
+
+
+if(@type='FeeType')
+	begin
+		Select iPK_CustEnum as ID,sName as Text from CSTMENUM where iFK_EnumNo = 42 order by Text
+	end
+if(@type='Course')  
+ begin  
+ select distinct dept.Fk_CourseId as ID, enum.sName as [Text],enum.iId ID1 from DEPTCOURSEMAP dept  
+ inner join CSTMENUM enum on enum.iPK_CustEnum = dept.Fk_CourseId  
+ where dept.Fk_DeptId = @menuId  
+ end  
+
+	
+if(@type='TrusteeMember')
+	begin
+		select sPrsnName,iisprimary,iisauthorize from TRSTDEPT where iFk_TrstInfoId=@menuId and len(sEmailId)>0
+	end
+
+if(@type='District')
+	begin
+		select iID as ID, CONCAT(sDistrict,' [',sMangalName,']') as Text from DISTRICTMST
+	end
+
+if(@type='Tehsil')
+	begin
+	    select iID as ID, CONCAT(sTehsil,' [',sMangalName,']') as Text from TEHSILMST where iDistrictID in(select value from string_split(@menuId,','))
+		--select iID as ID, CONCAT(sTehsil,' [',sMangalName,']') as Text from TEHSILMST where iDistrictID = @menuId
+	end
+
+if(@type='DEPTNOC')
+	begin
+		select distinct iFk_NOCDeptId as ID,NOCCOUSTEMINFO.sName as [Text] from NOCDEPMAP 
+		inner join NOCCOUSTEMINFO on NOCCOUSTEMINFO.iNocCstId = NOCDEPMAP.iFk_NOCDeptId
+		where NOCDEPMAP.iFk_DeptId=@menuId
+	end
+
+if(@type='NOCTypeDetails')
+	begin
+		select distinct iFk_NOCTyp as ID,NOCCOUSTEMINFO.sName as [Text] from NOCDEPMAP 
+		inner join NOCCOUSTEMINFO on NOCCOUSTEMINFO.iNocCstId = NOCDEPMAP.iFk_NOCTyp
+		where NOCDEPMAP.iFk_NOCDeptId=@menuId
+	end
+
+if(@type='LandInfo')
+	begin
+		declare @collegeID int
+
+		select top 1 @collegeID=iFKCLG_ID from  MST_Apln where sGUID =@menuId
+		select  L.iPK_ID,
+		L.sApplGUID,
+		isnull(cors.sName,'College Level') Course,
+		L.iClgID,
+		L.sLndArea,
+		L.sLndDocType,
+		L.sIsLndCnvrted,
+		case when(L.sOrdrNo ='') then 'NA' else L.sOrdrNo end sOrdrNo,
+		case when year(L.dtOrdrDate)=1900  then 'NA' else convert(varchar(10),L.dtOrdrDate,103) end dtOrdrDate,
+		L.sLndTyp,
+		L.sKhasaraNo,
+		L.dLndArea,
+		L.dTotalArea,
+		
+		case when A1.bAttachFile is not null then concat('data:',A1.DocumentContent,';base64,',A1.bAttachFile) else NULL end As UploadConvertedDocument,
+		A1.DocumentExtension As UploadConvertedDocumentExtension,
+		A1.DocumentContent As UploadConvertedDocumentContent,
+
+		case when A2.bAttachFile is not null then concat('data:',A2.DocumentContent,';base64,',A2.bAttachFile) else NULL end As UploadLandTitleDoc,
+		A2.DocumentExtension As UploadLandTitleDocExtension,
+		A2.DocumentContent As UploadLandTitleDocContent,
+
+		case when A3.bAttachFile is not null then concat('data:',A3.DocumentContent,';base64,',A3.bAttachFile) else NULL end As UploadLandDoc,
+		A3.DocumentExtension As UploadLandDocExtension,
+		A3.DocumentContent As UploadLandDocContent,
+
+		case when A4.bAttachFile is not null then concat('data:',A4.DocumentContent,';base64,',A4.bAttachFile) else NULL end As UploadLandAccureTypeDoc,
+		A4.DocumentExtension As UploadLandAccureTypeDocExtension,
+		A4.DocumentContent As UploadLandAccureTypeDocContent,
+
+		case when A5.bAttachFile is not null then concat('data:',A5.DocumentContent,';base64,',A5.bAttachFile) else NULL end As UploadLandNotConvertDoc,
+		A5.DocumentExtension As UploadLandNotConvertDocExtension,
+		A5.DocumentContent As UploadLandNotConvertDocContent,
+
+		case when A6.bAttachFile is not null then concat('data:',A6.DocumentContent,';base64,',A6.bAttachFile) else NULL end As UploadorderDoc,
+		A6.DocumentExtension As UploadorderDocExtension,
+		A6.DocumentContent As UploadOrderDocContentt,
+
+		case when A7.bAttachFile is not null then concat('data:',A7.DocumentContent,';base64,',A7.bAttachFile) else NULL end As UploadAffidavitNotDoc,
+		A7.DocumentExtension As UploadAffidavitNotExtension,
+		A7.DocumentContent As UploadAffidavitNotContentt,
+
+		L.slndAccureTyp,
+		L.sOwnerName,
+		L.dtAffidavitDate,
+		L.dtNOTAffidavitDate
+
+		from LNDINFMST L
+		left join APLCTNATTCH A1 on A1.iFk_AplcndetId=L.iPK_ID and A1.sFormName='Land&Information' and  A1.iDocTyp=1118  
+		left join APLCTNATTCH A2 on A2.iFk_AplcndetId=L.iPK_ID and A2.sFormName='Land&Information' and  A2.iDocTyp=2161  
+		left join APLCTNATTCH A3 on A3.iFk_AplcndetId=L.iPK_ID and A3.sFormName='Land&Information' and  A3.iDocTyp=2162
+		left join APLCTNATTCH A4 on A4.iFk_AplcndetId=L.iPK_ID and A4.sFormName='Land&Information' and  A4.iDocTyp=11496
+		left join APLCTNATTCH A5 on A5.iFk_AplcndetId=L.iPK_ID and A5.sFormName='Land&Information' and  A5.iDocTyp=11540
+		left join APLCTNATTCH A6 on A6.iFk_AplcndetId=L.iPK_ID and A6.sFormName='Land&Information' and  A6.iDocTyp=11584
+		left join APLCTNATTCH A7 on A7.iFk_AplcndetId=L.iPK_ID and A7.sFormName='Land&Information' and  A7.iDocTyp=11585
+
+		left join CSTMENUM cors on cors.iPK_CustEnum = L.iCorsID
+		where L.iClgID = @collegeID
+	end
+
+if(@type='GetCommittee')
 begin
-if(@Id=50)
+	select iPk_CommiteeId as ID,sComtNam as Text,iDistID as ID1 ,iTehID as PartyId from CMTIMST where iDeptId = @menuId and iComtTypid=1
+end
+
+
+if(@type='GetCommitteeMembers')
 begin
- select iId [ID],sName [Text] from CSTMENUM
- where iFK_EnumNo=@Id  and iIsActv=1
-End
-else
-Begin
-select cst.iPK_CustEnum [Id],cst.sName [Text] 
-from  
-CSTMENUM cst 
-left join DEPTCOURSEMAP dpt
-on dpt.Fk_CourseId=cst.iPK_CustEnum  
-where  cst.iPK_CustEnum  not in (select distinct s.Fk_CourseId
-from  DEPTCOURSEMAP s ) and cst.iFK_EnumNo=@Id order by cst.iPK_CustEnum
+	declare @data nvarchar(500)
+	, @sub nvarchar(500)
+	, @attchament nvarchar(max)
+	select @data =sComtMemLst,@sub = sSubj,@attchament=sUplimg from CMTIMST where iPk_CommiteeId = @menuId
+	select dt1.value as UserID,concat(P.sFstName,' ',P.sLstName) as [Name],P.sName as SSOID,P.sEmailId as EmailAddress ,@sub as [subject],@attchament as [files]
+	from string_split(@data,',') dt1
+	left join PRTYMST P on P.sPK_PrtyCode = dt1.value
+end
+
+if(@type='GetAssignedCommitteeAndMembers')
+begin
+	select 
+		asgCmt.iFk_CmtyID 
+		,cmt.sComtNam
+		,asgCmt.sApplNo
+		,case when asgCmt.iFk_CmtytypeID=1 then 'Inspection Committee' else 'Others' end as CommitteeType
+		,cast(asgCmt.dtStrtDate as date) dtStrtDate
+		,cast(asgCmt.dtEndDate as date) dtEndDate
+		,asgCmt.tStrttime
+		,asgCmt.tEndtime
+		,cmt.iDeptId
+		,cmt.sSubj
+		,cmt.sUplimg
+		,isnull(asgCmt.isNotfy,0) as isNotfy
+
+		from MST_InspCmtyAsgmt asgCmt
+		inner join CMTIMST cmt on cmt.iPk_CommiteeId = asgCmt.iFk_CmtyID
+		where asgCmt.sApplNo = @menuId
+end
+
+if(@type='DeleteAssignedCommittee')
+begin
+	delete from MST_InspCmtyAsgmt  where sApplNo = @menuId
+	select 1 as StatusCode, 'Deleted Successfully...' as [Message]
+end
+
+if(@type='SendbackForward')
+begin
+	
+declare @lvl int 
+select @lvl = rol.iLevelId from PRTYMST usr
+inner join ROLDEPT rol on rol.iRoleId = usr.iRoleId
+where sPK_PrtyCode = @PartyId
+
+if(@menuId= 'forward')
+begin
+	select rol.iPk_RolId as ID ,rol.sRolName as Text from ROLDEPT rd
+	inner join ROLEMST rol on rol.iPk_RolId = rd.iRoleId
+	where rd.iLevelId>=@lvl
+end
+
+if(@menuId= 'sendback')
+begin
+	select 0 as ID, 'Applicant' as Text
+	union
+	select rol.iPk_RolId as ID ,rol.sRolName as Text from ROLDEPT rd
+	inner join ROLEMST rol on rol.iPk_RolId = rd.iRoleId
+	where iLevelId<@lvl
+end
+end
+
+if(@type='GetMyColleges')
+begin
+		Select distinct iPk_ClgID as ID, upper(sNameOfClg) as Text from APLCTNBASICINFO 
+	order by upper(sNameOfClg)
+end
+
+if(@type='GetCoursesForCollege')
+begin
+	--select distinct iFK_CourseId as ID, enum.sName as Text from DEPTVSCURS cors
+	--inner join APLCTNBASICINFO clg on clg.iPk_ClgID = cors.iPk_AplcnId
+	--inner join CSTMENUM enum on enum.iPK_CustEnum = cors.iFK_CourseId
+	--where clg.iPk_ClgID = @menuId
+
+	---------
+	--select distinct iFK_CourseId as ID, enum.sName as Text from SUBMAST
+	--inner join CSTMENUM enum on enum.iPK_CustEnum = SUBMAST.iFK_CourseId
+	--where iPk_ClgID =@menuId  and (isnull(bIsTNOC,0)=0 and isnull(bIsPNOC,0)=0 or isnull(bIsTNOC,0)=1 and isnull(bIsPNOC,0)=0)
+
+	---------------
+	select distinct iFK_CourseId as ID, enum.sName as Text from SUBMAST
+	inner join CSTMENUM enum on enum.iPK_CustEnum = SUBMAST.iFK_CourseId
+	where iPk_ClgID =@menuId  and (isnull(bIsTNOC,0)=0 and isnull(bIsPNOC,0)=0 or isnull(bIsTNOC,0)=1 and isnull(bIsPNOC,0)=0)
+
+end
+
+if(@type='GetCoursesForCollegeOLDNOC1')
+begin
+	--select distinct iFK_CourseId as ID, enum.sName as Text from DEPTVSCURS cors
+	--inner join APLCTNBASICINFO clg on clg.iPk_ClgID = cors.iPk_AplcnId
+	--inner join CSTMENUM enum on enum.iPK_CustEnum = cors.iFK_CourseId
+	--where clg.iPk_ClgID = @menuId
+
+	--	select distinct SUBMAST.iFK_CourseId as ID, Upper(enum.sName) as Text from SUBMAST
+	--inner join CSTMENUM enum on enum.iPK_CustEnum = SUBMAST.iFK_CourseId
+	--left join MST_Apln draft on draft.iFKCLG_ID=SUBMAST.iPk_ClgID and draft.iFK_CORS_ID=SUBMAST.iFK_CourseId
+	--where iPk_ClgID =@menuId and (isnull(bIsTNOC,0)=1 or isnull(bIsPNOC,0)=1)
+	--order by Upper(enum.sName)
+
+	--select distinct SUBMAST.iFK_CourseId as ID, Upper(enum.sName) as Text from DEPTVSCURS SUBMAST
+	--inner join CSTMENUM enum on enum.iPK_CustEnum = SUBMAST.iFK_CourseId
+	--left join MST_Apln draft on draft.iFKCLG_ID=SUBMAST.iPk_AplcnId and draft.iFK_CORS_ID=SUBMAST.iFK_CourseId
+	--where iPk_AplcnId =@menuId and (isnull(bIsTNOC,0)=1 or isnull(bIsPNOC,0)=1)
+	--order by Upper(enum.sName)
+
+	select distinct SUBMAST.iFK_CourseId as ID, Upper(enum.sName) as Text from SUBMAST
+	inner join CSTMENUM enum on enum.iPK_CustEnum = SUBMAST.iFK_CourseId
+	left join MST_Apln draft on draft.iFKCLG_ID=SUBMAST.iPk_ClgID and draft.iFK_CORS_ID=SUBMAST.iFK_CourseId
+	inner join DEPTVSCURS d on  d.iFK_CourseId = draft.iFK_CORS_ID and d.sSubjectDepart = draft.iFK_Subj_ID and d.iPk_AplcnId = draft.iFKCLG_ID and d.iFk_TrstInfoId = draft.iFKTst_ID
+	where iPk_ClgID =@menuId 
+and isnull(Fk_StatusId,0) = 1 and isnull(d.bIsPNOC,0)=0
+	order by Upper(enum.sName)
+end
+
+
+if(@type='GetSessionYears')
+begin
+	select iPk_Id as ID, sName as Text from FinYear where iStts=1
+end
+
+if(@type='GetOLDNOCData')
+begin
+select 
+L.iPK_Id
+,L.iFk_ClgID
+,clg.sNameOfClg as collegeName
+,L.iFk_CORSID
+,course.sName as courseName
+,case when L.iNocTypID=2 then'PNOC' when L.iNocTypID=1 then 'TNOC' end as nocTypeName
+,L.iFk_SYID
+,sessionyear.sName as sessionYear
+,L.sNOCNo
+,L.dtNOCRcvdOn
+,L.dtNOCExprOn
+,L.sRemrk
+,L.dtCrtedOn
+	
+		,case when A1.bAttachFile is not null then concat('data:',A1.DocumentContent,';base64,',A1.bAttachFile) else NULL end As NocDoc,
+		A1.DocumentExtension As NocDocExtension,
+		A1.DocumentContent As NocDocContent
+
+		from MST_OLD_NOC L
+		left join APLCTNATTCH A1 on A1.iFk_AplcndetId=L.iPK_ID and A1.sFormName='OLDNOCData' and  A1.iDocTyp=4163  
+		inner join APLCTNBASICINFO clg  on clg.iPk_ClgID = L.iFk_ClgID
+		inner join CSTMENUM course on course.iPK_CustEnum = L.iFk_CORSID
+		inner join FinYear sessionyear on sessionyear.iPk_Id = L.iFk_SYID
+		
+end
+
+if(@type='GetCollegeForDepartment')
+begin
+select distinct iPk_AplcnId as ID,cst.sName as CollegeType,  Upper(clg.sNameOfClg) as Text, clg.dtAplcnDate,(case when bIsTNOC=1 then 'Active'else 'Deactive' end) TNOCStatus ,(case when bIsPNOC=1 then 'Active'else 'Deactive' end) PNOCStatus,
+	  (select count(*) from MST_Apln where iFKCLG_ID = clg.iPk_ClgID ) PartyID,
+	  IsNull(STUFF((Select ','+CSTMENUM.sName    
+				from (select Distinct iFK_CourseId ,DEPTVSCURS.iPk_AplcnId,value from DEPTVSCURS cross apply string_split(Cast(iFK_CourseId as nvarchar(max)),',')) T1    
+				inner join CSTMENUM on T1.value=CSTMENUM.iPK_CustEnum    
+				where  T1.iPk_AplcnId=dpt.iPk_AplcnId    
+				FOR XML PATH('')),1,1,''),'NA') CourseName
+	  ,IsNull(STUFF((Select ','+CSTMENUM.sName    
+				from (select DEPTVSCURS.iPk_AplcnId,value from DEPTVSCURS cross apply string_split(sSubjectDepart,',')) T1    
+				inner join CSTMENUM on T1.value=CSTMENUM.iPK_CustEnum    
+				where  T1.iPk_AplcnId=dpt.iPk_AplcnId    
+				FOR XML PATH('')),1,1,''),'NA') subjectName,
+				isnull(dpt.bIsTNOC,0) bIsTNOC, isnull(dpt.bIsPNOC,0) bIsPNOC
+	  from DEPTVSCURS dpt
+  inner join APLCTNBASICINFO clg on clg.iPk_ClgID = dpt.iPk_AplcnId
+  inner join CSTMENUM cst on cst.iPK_CustEnum=clg.iClgTyp
+  where iFK_DeptId = @menuId and clg.iFk_TrstInfoId =@PartyId and ( dpt.bIsTNOC=1 or  dpt.bIsPNOC=1)
+  order by clg.dtAplcnDate desc
+end
+
+if(@type='GetCollegeForDepartmentNOCApply')
+begin
+	  select distinct iPk_AplcnId as ID, Upper(clg.sNameOfClg) as Text, clg.dtAplcnDate,
+	  (select count(*) from MST_Apln where iFKCLG_ID = clg.iPk_ClgID ) PartyID
+	  
+	  from DEPTVSCURS dpt
+  inner join APLCTNBASICINFO clg on clg.iPk_ClgID = dpt.iPk_AplcnId
+  where iFK_DeptId = @menuId 
+  and clg.iPk_ClgID in (select iFKCLG_ID from MST_Apln where iSts =1 and isnull(iIsCancled,0) = 0 and isnull(iIsSub2Dept,0) = 0)
+  and clg.iFk_TrstInfoId = @PartyId
+  order by clg.dtAplcnDate
+end
+
+if(@type='AvailableNOC')
+begin
+--select 0 as ID,'Inspection Fee' as Text,'NA' as ID1,'Disabled' as PartyID
+--union
+select Ndept.iFk_NOCTyp as ID, NMst.sName as Text, '#div' + replace(NMst.sName,' ','_') as ID1 ,
+case when(cast(ev.dtStrDate as date)<=cast(getdate() as date) and cast(ev.dtEndDate as date)>=cast(getdate() as date)) then '1' else '0' end as PartyID
+from NOCDEPMAP Ndept
+inner join NOCCOUSTEMINFO NMst on Nmst.iNocCstId= Ndept.iFk_NOCTyp
+left join EventMst ev on ev.iFk_NOCTyp =  Nmst.iNocCstId and ev.iStts=1
+where Ndept.iFk_NOCDeptId = (select iNocCstId from NOCCOUSTEMINFO where sName= @menuId) and Ndept.iFk_DeptId=@PartyId
+end
+
+if(@type='GetCourseForCollege')
+begin
+  
+  select distinct iFK_CourseId as ID, corsEnum.sName as Text --,apl.sSubjectDepart
+from DEPTVSCURS apl
+inner join CSTMENUM corsEnum  on corsEnum.iPK_CustEnum = apl.iFK_CourseId
+where iPk_AplcnId = @menuId 
+and (isnull(Fk_StatusId,0) = 1 or isnull(Fk_StatusId,0) = 3) and isnull(bIsPNOC,0)=0
+--and ((isnull(apl.bIsTNOC,0)=1 and isnull(apl.bIsPNOC,0)=0) or (isnull(apl.bIsTNOC,0)=0 and isnull(apl.bIsPNOC,0)=0) )
+order by corsEnum.sName
+
+--select distinct iFK_CourseId as ID, corsEnum.sName as Text 
+--from DEPTVSCURS apl
+--inner join CSTMENUM corsEnum  on corsEnum.iPK_CustEnum = apl.iFK_CourseId
+--where iPk_AplcnId = @menuId 
+--and ((isnull(apl.bIsTNOC,0)=1 and isnull(apl.bIsPNOC,0)=0) or (isnull(apl.bIsTNOC,0)=0 and isnull(apl.bIsPNOC,0)=0) )
+--order by corsEnum.sName
  
+--select distinct iFK_CourseId as ID, corsEnum.sName as Text from SUBMAST apl
+--inner join CSTMENUM corsEnum  on corsEnum.iPK_CustEnum = apl.iFK_CourseId
+--where iPk_ClgID = @menuId and ((isnull(apl.bIsTNOC,0)=1 and isnull(apl.bIsPNOC,0)=0) or (isnull(apl.bIsTNOC,0)=0 and isnull(apl.bIsPNOC,0)=0) )
+--order by corsEnum.sName
 end
-End
 
----------------------------------------------------------------------------------------
+if(@type='GetCourseForCollegeApplyNOC')
+begin
+--select distinct iFK_CORS_ID as ID, corsEnum.sName as Text from MST_Apln apl
+--inner join CSTMENUM corsEnum  on corsEnum.iPK_CustEnum = apl.iFK_CORS_ID
+--where iFKCLG_ID = @menuId and apl.iSts =1 and isnull(apl.iIsCancled,0) = 0 and isnull(apl.iIsSub2Dept,0) = 0
+--order by corsEnum.sName
+
+select distinct iFK_CourseId as ID, cor.sName as Text from DEPTVSCURS dept
+inner join CSTMENUM cor on cor.iPK_CustEnum = dept.iFK_CourseId
+where dept.iPk_AplcnId=@menuId and isnull(dept.bIsTNOC,0) = 0 and isnull(dept.bIsPNOC,0) = 0
+and iFK_CourseId not in(select distinct iFK_CourseId from DEPTVSCURS dept
+inner join CSTMENUM cor on cor.iPK_CustEnum = dept.iFK_CourseId
+where dept.iPk_AplcnId=@menuId and (isnull(dept.bIsTNOC,0) != 0 or isnull(dept.bIsPNOC,0)!= 0))
+end
+
+if(@type='GetSubjectForCourse')
+begin
+--select distinct dpt.sSubjectName as ID,upper(subj.sName) as Text
+--from SUBMAST dpt
+--inner join CSTMENUM subj on subj.iPK_CustEnum = dpt.sSubjectName
+--where iFK_CourseId = @menuId
+--order by upper(subj.sName)
+
+--select distinct cast(dpt.iFK_CourseId as nvarchar(10))+'-'+ cast(dpt.sSubjectDepart as nvarchar(10)) as ID,upper(cors.sName)+' : '+UPPER(subj.sName) as Text
+--from DEPTVSCURS dpt
+--inner join CSTMENUM subj on subj.iPK_CustEnum = dpt.sSubjectDepart
+--inner join CSTMENUM cors on cors.iPK_CustEnum = dpt.iFK_CourseId
+--where iFK_CourseId in(select value from string_split(@menuId,','))  and ((isnull(dpt.bIsTNOC,0)=1 and isnull(dpt.bIsPNOC,0)=0) or (isnull(dpt.bIsTNOC,0)=0 and isnull(dpt.bIsPNOC,0)=0) ) and iPk_AplcnId=@PartyId
+--order by upper(cors.sName)+' : '+UPPER(subj.sName)
+
+--select distinct cast(dpt.iFK_CourseId as nvarchar(10))+'-'+ cast(dpt.sSubjectName as nvarchar(10)) as ID,upper(cors.sName)+' : '+UPPER(subj.sName) as Text
+--from SUBMAST dpt
+--inner join CSTMENUM subj on subj.iPK_CustEnum = dpt.sSubjectName
+--inner join CSTMENUM cors on cors.iPK_CustEnum = dpt.iFK_CourseId
+
+--where iFK_CourseId in(select value from string_split(@menuId,','))  and ((isnull(dpt.bIsTNOC,0)=1 and isnull(dpt.bIsPNOC,0)=0) or (isnull(dpt.bIsTNOC,0)=0 and isnull(dpt.bIsPNOC,0)=0) )
+--order by upper(cors.sName)+' : '+UPPER(subj.sName)
+
+select distinct cast(dpt.iFK_CourseId as nvarchar(10))+'-'+ cast(dpt.sSubjectName as nvarchar(10)) as ID,upper(cors.sName)+' : '+UPPER(subj.sName) as Text
+from SUBMAST dpt
+inner join CSTMENUM subj on subj.iPK_CustEnum = dpt.sSubjectName
+inner join CSTMENUM cors on cors.iPK_CustEnum = dpt.iFK_CourseId
+
+where iFK_CourseId in(select value from string_split(@menuId,','))  and ((isnull(dpt.bIsTNOC,0)=1 and isnull(dpt.bIsPNOC,0)=0) or (isnull(dpt.bIsTNOC,0)=0 and isnull(dpt.bIsPNOC,0)=0) ) and iPk_ClgID=@PartyId
+order by upper(cors.sName)+' : '+UPPER(subj.sName)
+end
+if(@type='GetCourseForCollegeApplyNOC_NewSubj')
+begin
+
+select distinct iFK_CourseId as ID, cor.sName as Text from DEPTVSCURS dept
+inner join CSTMENUM cor on cor.iPK_CustEnum = dept.iFK_CourseId
+where dept.iPk_AplcnId=@menuId and isnull(dept.bIsTNOC,0) = 0 and isnull(dept.bIsPNOC,0) = 0
+and iFK_CourseId  in(select distinct iFK_CourseId from DEPTVSCURS dept
+inner join CSTMENUM cor on cor.iPK_CustEnum = dept.iFK_CourseId
+where dept.iPk_AplcnId=@menuId and (isnull(dept.bIsTNOC,0) != 0 or isnull(dept.bIsPNOC,0)!= 0))
+end
+
+if(@type='GetSubjectForCourseOLDNOC1')
+begin
+--select distinct dpt.sSubjectName as ID,upper(subj.sName) as Text
+--from SUBMAST dpt
+--inner join CSTMENUM subj on subj.iPK_CustEnum = dpt.sSubjectName
+--where iFK_CourseId = @menuId
+--order by upper(subj.sName)
+
+--select distinct cast(dpt.iFK_CourseId as nvarchar(10))+'-'+ cast(dpt.sSubjectName as nvarchar(10)) as ID,upper(cors.sName)+' : '+UPPER(subj.sName) as Text
+--from SUBMAST dpt
+--inner join CSTMENUM subj on subj.iPK_CustEnum = dpt.sSubjectName
+--inner join CSTMENUM cors on cors.iPK_CustEnum = dpt.iFK_CourseId
+--left join MST_Apln draft on draft.iFKCLG_ID=dpt.iPk_ClgID and draft.iFK_CORS_ID=dpt.iFK_CourseId and draft.iFK_Subj_ID=dpt.sSubjectName
+--where iFK_CourseId = @menuId
+--and dpt.iPk_ClgID=@PartyId
+--and ((isnull(dpt.bIsTNOC,0)=1 or isnull(dpt.bIsPNOC,0)=1) )
+--order by upper(cors.sName)+' : '+UPPER(subj.sName)
+
+	select distinct cast(dpt.iFK_CourseId as nvarchar(10))+'-'+ cast(dpt.sSubjectDepart as nvarchar(10)) as ID,upper(cors.sName)+' : '+UPPER(subj.sName) as Text
+from DEPTVSCURS dpt
+inner join CSTMENUM subj on subj.iPK_CustEnum = dpt.sSubjectDepart
+inner join CSTMENUM cors on cors.iPK_CustEnum = dpt.iFK_CourseId
+left join MST_Apln draft on draft.iFKCLG_ID=dpt.iPk_AplcnId and draft.iFK_CORS_ID=dpt.iFK_CourseId and draft.iFK_Subj_ID=dpt.sSubjectDepart
+where iFK_CourseId = @menuId
+and dpt.iPk_AplcnId=@PartyId
+and ((isnull(dpt.bIsTNOC,0)=1 or isnull(dpt.bIsPNOC,0)=1) )
+order by upper(cors.sName)+' : '+UPPER(subj.sName)
+
+end
+
+if(@type='GetSubjectForCourseOLDNOC')
+begin
+--select distinct dpt.sSubjectName as ID,upper(subj.sName) as Text
+--from SUBMAST dpt
+--inner join CSTMENUM subj on subj.iPK_CustEnum = dpt.sSubjectName
+--where iFK_CourseId = @menuId
+--order by upper(subj.sName)
+
+select distinct cast(dpt.iFK_CourseId as nvarchar(10))+'-'+ cast(dpt.sSubjectName as nvarchar(10)) as ID,upper(cors.sName)+' : '+UPPER(subj.sName) as Text
+from SUBMAST dpt
+inner join CSTMENUM subj on subj.iPK_CustEnum = dpt.sSubjectName
+inner join CSTMENUM cors on cors.iPK_CustEnum = dpt.iFK_CourseId
+
+where iFK_CourseId in(select iFK_CourseId from SUBMAST where iPk_ClgID=@menuId) and iPk_ClgID = @menuId
+and (isnull(bIsTNOC,0)=0 and isnull(bIsPNOC,0)=0 or isnull(bIsTNOC,0)=1 and isnull(bIsPNOC,0)=0)
+order by upper(cors.sName)+' : '+UPPER(subj.sName)
+
+end
+
+if(@type='GetSubjectForCourseForApply')
+begin
+select distinct cast(dpt.iFK_Subj_ID as nvarchar(10))+'-'+ cast(dpt.iFK_CORS_ID as nvarchar(10)) as ID,upper(dpt.sCorsName)+' : '+UPPER(dpt.sSubjName) as Text
+from MST_Apln dpt
+--inner join CSTMENUM subj on subj.iPK_CustEnum = dpt.sSubjName
+--inner join CSTMENUM cors on cors.iPK_CustEnum = dpt.iFK_CourseId
+
+where iFK_CORS_ID in(select value from string_split(@menuId,',')) and  dpt.iSts =1 and isnull(dpt.iIsCancled,0) = 0 and isnull(dpt.iIsSub2Dept,0) = 0
+order by upper(dpt.sCorsName)+' : '+UPPER(dpt.sSubjName)
+
+end
+
+if(@type='GetExistingNOCForCollege')
+begin
+	select  distinct
+oldNOC.iPK_Id as PKID
+,oldNOC.iFk_ClgID as collegeID
+,upper(clg.sNameOfClg) collegeName
+,iFk_CORSID as courseID
+,upper(course.sName) as courseName
+,iFk_SbjID
+,Upper(subj.sName) as SubjectName
+,case when iNocTypID = 1 then 'TNOC' else 'PNOC' end NOCStatus 
+,oldNOC.sNOCNo as NOCNo
+,oldNOC.dtNOCRcvdOn as NOCOrderDate
+--,oldNOC.sAttachFile as NOCDocument
+,case when attch.bAttachFile is not null then concat('data:',attch.DocumentContent,';base64,',attch.bAttachFile) else NULL end As NOCDocument
+from SUBMAST sbMSt
+inner join MST_OLD_NOC oldNOC on oldNOC.iFk_ClgID=sbMSt.iPk_ClgID and oldNOC.iFk_CORSID=sbMSt.iFK_CourseId and oldNOC.iFk_SbjID=sbMSt.sSubjectName
+inner join APLCTNBASICINFO clg on clg.iPk_ClgID =  sbMSt.iPk_ClgID
+inner join CSTMENUM subj on subj.iPK_CustEnum = oldNOC.iFk_SbjID
+inner join CSTMENUM course on course.iPK_CustEnum = oldNOC.iFk_CORSID and oldNOC.iFk_SbjID = subj.iPK_CustEnum
+inner join APLCTNATTCH attch on attch.sFormName='OLDNOCData' and attch.iFk_AplcndetId = oldNOC.iPK_Id
+inner join MST_Apln draft on draft.iFK_CORS_ID = oldNOC.iFk_CORSID and draft.iFK_Subj_ID = oldNOC.iFk_SbjID and iIsSub2Dept is null and iSts = 1
+where sbMSt.iPk_ClgID = @menuId and isnull(bIsTNOC,0) = 1 and isnull(bIsPNOC,0) = 0
+end
 
 
-DEPTCOURSEMAP table me column Name Update Karne Hai===>  sDegree 
 
------------------------------------------------------------------------------
-ALTER proc [dbo].[USP_Master_DeptCourseMapping_Get]
+if(@type='GetFeeForApplication')
+begin
+
+declare @clgID int ,@typeID nvarchar(1000),@tehsil int, @totalFee decimal(18,2),@deptID int,@isbackword int
+
+select @clgID=iFK_ClgID,@typeID =stypeID,@deptID=iFK_DeptID from MST_DeptAppl where sApplID = @menuId
+
+select @tehsil = iFk_ThslId from APLCTNBASICINFO where iPk_ClgID =@clgID
+--select @isbackword =isnull(iIsBackward,0) from TEHSILMST where iID  = @tehsil
+
+declare @Sdt1 date,@Edt1 date,@Sdt2 date,@Edt2 date,@Sdt3 date,@Edt3 date,@Lfee decimal,@alFee decimal
+select 
+@Sdt1 = dtStartdate1
+,@Edt1 = dtEnddate1
+,@Sdt2 = dtStartdate2
+,@Edt2 = dtEnddate2
+,@Sdt3 = dtStartdate3
+,@Edt3 = dtEnddate3
+,@Lfee = dLateFee
+,@alFee = dAddiLateFee
+from FeeMST where iStts=1 and DeptID = @deptID
+
+declare @feeDetails as table (FormName nvarchar(1000),FeeAmount decimal(18,2))
+insert into @feeDetails
+	select typeName.sName as formName,fee.dCharges from FeeTRN fee
+	inner join NOCCOUSTEMINFO typeName on fee.iFK_FrmID = typeName.iNocCstId
+	where iFK_FrmID in (select value from string_split(@typeID,','))
+	union all
+	select 'Total Amount' as formName,sum(fee.dCharges) from FeeTRN fee
+	inner join NOCCOUSTEMINFO typeName on fee.iFK_FrmID = typeName.iNocCstId
+	where iFK_FrmID in (select value from string_split(@typeID,','))
+
+--if(getdate() >= @Sdt1 and getdate()<=@Edt1)
+--begin
+--	--select 'Normal'
+	
+--	--update MST_DeptAppl set dTotalFee = @totalFee where sApplID = @menuId
+--	--select FormName as ID1, FeeAmount as Text from @feeDetails
+--end
+
+if(getdate() >=@Sdt2 and getdate() <=@Edt2)
+begin
+	--select 'late'
+	update @feeDetails set FormName ='Total Amount (Late Fee :'+cast(@Lfee as nvarchar(1000))+')', FeeAmount= FeeAmount+@Lfee where FormName ='Total Amount'
+	
+	--set @totalFee =  (select isnull(FeeAmount,0) from @feeDetails where FormName like '%'+'Total Amount'+'%')
+	update MST_DeptAppl set dTotalFee = @totalFee where sApplID = @menuId
+	
+	alter table MST_DeptAppl
+	add dTotalFee decimal(18,0)
+end
+
+if(getdate() >=@Sdt3 and getdate() <=@Edt3)
+begin
+	update @feeDetails set FormName ='Total Amount (Addition Late Fee :'+cast(@alFee as nvarchar(1000))+')', FeeAmount= FeeAmount+@alFee where FormName ='Total Amount'
+	--set @totalFee =  (select isnull(FeeAmount,0) from @feeDetails where FormName like '%'+'Total Amount'+'%')
+	update MST_DeptAppl set dTotalFee = @totalFee where sApplID = @menuId
+	--select FormName as ID1, FeeAmount as Text from @feeDetails
+	--select 'Aur Late'
+end
+
+set @totalFee =  (select isnull(FeeAmount,0) from @feeDetails where FormName like '%'+'Total Amount'+'%')
+update MST_DeptAppl set dTotalFee = @totalFee where sApplID = @menuId
+
+--if not exists(select * from MST_PMTHSTRY where sFK_ApplID = @menuId)
+--	begin
+--		insert into MST_PMTHSTRY(sFK_ApplID,iFK_ClgID,dDueAMT)
+--		values(@menuId,@clgID,@totalFee)
+--	end
+
+select FormName as ID1, FeeAmount as Text,replace(replace(FormName,' ','_'),'-','_') as PartyID from @feeDetails
+
+
+end
+
+if(@type='InspectionFee')
+begin
+	select 0 as Id,dCharges as Text from FeeTRN where iFK_FrmID =46
+end
+
+if(@type='CollegeAmdmnt_NameChange')
+begin
+	select sNewNameEnglish as Text,sNewNameHindi as ID1 from CollegeAmendment where stypeId = @menuId and CollegeAmendment.iCollegeId=@PartyId
+end
+
+if(@type='CollegeAmdmnt_PlaceChange')
+begin
+	select isnull(sAddreslineoneNew,'') + ', '+ isnull(sAddresslinetwoNew,'') as Text from CollegeAmendment where stypeId = @menuId and CollegeAmendment.iCollegeId=@PartyId
+end
+if(@type = 'CollegeAmdmnt_SocietyChange')
+begin
+	select iNewSocity_Id as ID,trst.sName as Text from CollegeAmendment clgamd
+inner join TRSTINFO trst on trst.PK_TrstInfoId = clgamd.iNewSocity_Id
+
+where stypeId =@menuId and clgamd.iCollegeId=@PartyId
+end
+
+
+
+
+if(@type='MstDeptApplicationList')
+begin
+select
+ T2.ipkMstID
+,T2.sApplID
+,T2.stypeID
+,T2.iFK_ClgID
+,clg.sNameOfClg as CollegeName
+,T2.iFK_DeptID
+,dept.sDeptName as Dept
+,T2.iFK_TrstID
+,trust.sName as Trust
+, STUFF((Select ', '+NOCCOUSTEMINFO.sName
+from (select MST_DeptAppl.ipkMstID,value from MST_DeptAppl cross apply string_split(stypeID,',')) T1
+inner join  NOCCOUSTEMINFO on T1.value=NOCCOUSTEMINFO.iNocCstId 
+where T1.ipkMstID = T2.ipkMstID
+FOR XML PATH('')),1,1,'')  stypeName
+,dtCrtdOn
+,dTotalFee
+,isnull(sum(hst.dPaidAMT),0) PaidAmnt
+,isnull(dTotalFee-sum(dPaidAMT),dTotalFee)  DueAMT
+from 
+MST_DeptAppl T2  
+inner join APLCTNBASICINFO clg on clg.iPk_ClgID = T2.iFK_ClgID
+left join DPETMST dept on dept.iPK_DeptId = T2.iFK_DeptID
+inner join TRSTINFO trust on trust.PK_TrstInfoId = T2.iFK_TrstID
+left join MST_PMTHSTRY hst on hst.sFK_ApplID = T2.sApplID
+where clg.iFk_TrstInfoId = @PartyId
+group by T2.ipkMstID,T2.sApplID,T2.stypeID,T2.iFK_ClgID,clg.sNameOfClg,T2.iFK_DeptID,dept.sDeptName,T2.iFK_TrstID,trust.sName,dtCrtdOn,
+dTotalFee
+order by T2.dtCrtdOn desc
+end
+
+if(@type='GetFeeForType')
+begin
+	select 0 as ID, dCharges as Text from FeeTRN
+where iFK_FrmID = @menuId
+end
+
+
+if(@type='GetAnimalList')
+begin
+	Select iPK_CustEnum Id,sName text from CSTMENUM where iFK_EnumNo=45 
+	order by sName
+end
+
+if(@type='GetUniversityForDEPT')
+begin
+	select uDM.Fk_UniversitiesId as ID,uniName.sName as Text from UNVRSTDEPTEMAP uDM
+	inner join CSTMENUM uniName on uniName.iPK_CustEnum =uDM.Fk_UniversitiesId 
+	where Fk_DeptId = @menuId
+	order by sName
+end
+
+
+if(@type='GetCourseForClg')
+begin
+	declare @departID int 
+	set @deptID = (select top 1 iDepartment from APLCTNBASICINFO where iPk_ClgID =@menuId)
+	select distinct crs.sName as Text, dptcrs.Fk_CourseId as ID, dptcrs.Fk_DeptId as ID1
+	from DEPTCOURSEMAP dptcrs
+	inner join CSTMENUM crs on crs.iPK_CustEnum = dptcrs.Fk_CourseId
+	where Fk_DeptId = @deptID
+	order by sName
+end
+
+
+if(@type='UpdateApplicationStatus')
+begin
+	update MST_Apln set iSts=1, dtSubOn=GETDATE() where sGUID=@menuId
+end
+
+if(@type='CourseForClgFromMST')
+begin
+	select distinct sCorsName as text from MST_Apln dpt where iFKCLG_ID = @menuid and  dpt.iSts =1 and isnull(dpt.iIsCancled,0) = 0 and isnull(dpt.iIsSub2Dept,0) = 0
+end
+
+if(@type='SubjectForClgFromMST')
+begin
+	select distinct sSubjName as text from MST_Apln dpt where iFKCLG_ID = @menuid and  dpt.iSts =1 and isnull(dpt.iIsCancled,0) = 0 and isnull(dpt.iIsSub2Dept,0) = 0
+end
+
+if(@type='AmmendmentDetailsForCollege')
+begin
+	select stypeId Id,NOCCOUSTEMINFO.sName text from CollegeAmendment 
+inner join NOCCOUSTEMINFO on NOCCOUSTEMINFO.iNocCstId = CollegeAmendment.stypeId
+where iCollegeId= @menuId and isnull(iNocStatus,0)= 0 and isnull(iIsSnd2Dept,0)=0
+end
+
+if(@type='validateApplicationSubmission')
+begin
+	select 
+count(*) Totalrowcnt
+,count(iLndInf) LandDataCNT
+,count(iFclty) FacilityCNT
+,count(iFee) FeeCNT
+,count(iStaf) StaffCNT
+,count(iAcdmc) AcedmicCNT
+,count(iArct) ArchitectureCNT
+,count(iPrfDoc) ProofOfDOCCNT
+,count(iBldgn) BuildingCNT
+--,count(iOth) otherCNT
+,count(iOLDNOC) OldNOCCNT
+from MST_Apln
+where sGUID=@menuId
+end
+
+
+if(@type='paymentHistory')
+begin
+select
+isnull(cast(dDueAMT as nvarchar(1000)),'NA') as dDueAMT
+,isnull(cast(dPaidAMT as nvarchar(1000)),'NA') as dPaidAMT
+,isnull(format(dtPaidOn,'dd-MMM-yyyy hh:mm:ss tt'),'NA') as dtPaidOn
+,isnull(cast(sRecptData as nvarchar(max)),'NA') as sRecptData
+
+from MST_PMTHSTRY where sFK_ApplID = @menuId
+end
+
+
+
+
+if(@type='BuildingDetails')
+begin
+select 
+sAppGUID
+,iFK_FinyrID
+,iFK_TrstID
+,iFK_ClgID
+,iFK_DeptID
+,sBldgntyp
+,sOrdNo
+,rentedOrderNo
+,format(dtOrd,'dd-MMM-yyyy') as dtOrd
+,cast(OwnedBldgnDoc as nvarchar(max)) as OwnedBldgnDoc
+,isnull(cast(nullif(year(format(dtAgrExp,'dd-MMM-yyyy')),1900) as nvarchar(1000)),'NA') as dtAgrExp
+,cast(AgrExpDoc as nvarchar(max)) as AgrExpDoc
+,cast(rentCertificate as nvarchar(max)) as rentCertificate
+,format(dtFireFrom,'dd-MMM-yyyy') as dtFireFrom
+,format(dtFireTo,'dd-MMM-yyyy') as  dtFireTo
+,cast(FireNOCDoc as nvarchar(max)) as FireNOCDoc
+,format(dtPWDFrom,'dd-MMM-yyyy') as dtPWDFrom
+,format(dtPWDTo,'dd-MMM-yyyy') as dtPWDTo
+,sPWDOrderNo
+,cast(PWDNOCDoc as nvarchar(max)) as PWDNOCDoc
+,cast(BFrontImg as nvarchar(max)) as BFrontImg
+,cast(BBackImg  as nvarchar(max)) as BBackImg
+,cast(BLeftImg  as nvarchar(max)) as BLeftImg
+,cast(BRightImg as nvarchar(max)) as BRightImg
+,cast(BOtherImg as nvarchar(max)) as BOtherImg
+,iStatus
+,format(dtCrtdOn,'dd-MMM-yyyy') as dtCrtdOn
+,dtCrtdBy
+from MST_BLDING_Details
+where iFK_ClgID  = @menuId order by dtCrtdOn desc
+end
+
+if(@type='TNOC_PNOCExtention')
+begin
+	select  distinct
+iFK_CourseId as courseID
+,'Course : - ' + upper(course.sName) as ID
+,sSubjectName
+,'Subject : - ' + Upper(subj.sName) as Text
+from SUBMAST sbMSt
+inner join CSTMENUM subj on subj.iPK_CustEnum = sbMSt.sSubjectName
+inner join CSTMENUM course on course.iPK_CustEnum = sbMSt.iFK_CourseId and sbMSt.sSubjectName = subj.iPK_CustEnum
+where sbMSt.iPk_ClgID = @menuId and isnull(bIsTNOC,0) = 1 and isnull(bIsPNOC,0) = 0
+end
+
+
+if(@type='GetOLDNOCDataForCLG')
+begin
+
+select 
+L.iPK_Id
+,L.iFk_ClgID
+,clg.sNameOfClg as collegeName
+,L.iFk_CORSID
+,course.sName as courseName
+,L.iFk_SbjID as iFk_SubjectID
+,subj.sName as subjectName
+,case when L.iNocTypID=2 then'PNOC' when L.iNocTypID=1 then 'TNOC' end as nocTypeName
+,L.iFk_SYID
+,sessionyear.sName as sessionYear
+,L.sNOCNo
+,L.dtNOCRcvdOn
+,L.dtNOCExprOn
+,L.sRemrk
+,L.dtCrtedOn
+,L.issFyr as issuedForYear
+,case when A1.bAttachFile is not null then concat('data:',A1.DocumentContent,';base64,',A1.bAttachFile) else NULL end As NocDoc
+,A1.DocumentExtension As NocDocExtension
+,A1.DocumentContent As NocDocContent
+
+		from MST_OLD_NOC L
+		left join APLCTNATTCH A1 on A1.iFk_AplcndetId=L.iPK_ID and A1.sFormName='OLDNOCData' and  A1.iDocTyp=4163  
+		inner join APLCTNBASICINFO clg  on clg.iPk_ClgID = L.iFk_ClgID
+		inner join CSTMENUM course on course.iPK_CustEnum = L.iFk_CORSID
+		inner join CSTMENUM subj on subj.iPK_CustEnum = L.iFk_SbjID
+		inner join FinYear sessionyear on sessionyear.iPk_Id = L.iFk_SYID
+		where L.iFk_ClgID = @menuid
+		order by l.dtCrtedOn desc
+end
+---------------
+
+ALTER PROCEDURE [dbo].[USP_ADMIN_Land_BuildingInfo_Save]
+@iDeptID int = null
+,@iCorsID int = null
+,@iClgID int = null
+,@iFinyr int = null
+,@iTrstID int = null
+,@sApplGUID nvarchar(max) = null
+,@sLndArea nvarchar(500)= null
+,@sLndDocType nvarchar(500) = null
+,@sIsLndCnvrted nvarchar(500) = null
+,@sOrdrNo nvarchar(400) = null
+,@dtOrdrDate nvarchar(10) = null
+,@sLndTyp nvarchar(200) = null
+,@sKhasaraNo nvarchar(500) = null
+,@dLndArea decimal(18,0)= null
+,@dTotalArea decimal(18,0) = null
+,@slndAccureTyp nvarchar(100) = null
+,@LandConvert nvarchar(MAX)=null
+,@LandConvertExtension nvarchar(200)=null
+,@LandConvertContentType nvarchar(200)=null
+
+,@LandTitle nvarchar(MAX)=null
+,@LandTitleExtension nvarchar(200)=null
+,@LandTitleContentType nvarchar(200)=null
+
+,@LandDoc nvarchar(MAX)=null
+,@LandDocExtension nvarchar(200)=null
+,@LandDocContentType nvarchar(200)=null
+
+,@LandNotConvertDoc nvarchar(MAX)=null
+,@LandNotConvertDocExtension nvarchar(200)=null
+,@LandNotConvertDocContentType nvarchar(200)=null
+
+,@LandAccureDoc nvarchar(MAX)=null
+,@LandAccureDocExtension nvarchar(200)=null
+,@LandAccureDocContentType nvarchar(200)=null
+
+,@type nvarchar(500) = null
+,@sEntryType nvarchar(1000)= null
+,@sOwnerName nvarchar(1000)= null
+
+,@LandConvertAffidavit nvarchar(MAX)=null
+,@LandConvertExtensionAffidavit nvarchar(200)=null
+,@LandConvertContentTypeAffidavit nvarchar(200)=null
+
+,@UploadorderDoc nvarchar(MAX)=null
+,@UploadorderDocExtension nvarchar(200)=null
+,@UploadOrderDocContentt nvarchar(200)=null
+
+,@UploadAffidavitNotDoc nvarchar(MAX)=null
+,@UploadAffidavitNotExtension nvarchar(200)=null
+,@UploadAffidavitNotContentt nvarchar(200)=null
+
+,@dtAffidavitDate  nvarchar(10)=null
+,@dtNOTAffidavitDate  nvarchar(10)=null
 as
 begin
-select   m.pk_MapId,m.fk_DeptId deptId,m.Fk_CourseId courseId,d.sDeptName Department,c.sName Course,s.sName [Subject],m.sDegree as Degree from DEPTCOURSEMAP m
-inner join DPETMST d on d.iPK_DeptId=m.fk_DeptId
-inner join CSTMENUM c on c.iPK_CustEnum=m.Fk_CourseId and  c.iFK_EnumNo=30 and c.iIsActv=1
-inner join CSTMENUM s on s.iPK_CustEnum=m.Fk_SubjectId and  s.iFK_EnumNo=43 and s.iIsActv=1
-order by  1 desc
-end
 
-------------------------------------------------------------------------------------
-----CSTMENUM--- INSERT Script---------------
-
-INSERT [dbo].[CSTMENUM] ([iPK_CustEnum], [iFK_EnumNo], [sName], [sCrtdBy], [dtCrtdDt], [sUpdtBy], [dtUpdtOn], [sPrtyId], [iId], [iIsActv], [sTyp]) VALUES (11547, 46, N'UG', NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, NULL, 1, NULL)
-INSERT [dbo].[CSTMENUM] ([iPK_CustEnum], [iFK_EnumNo], [sName], [sCrtdBy], [dtCrtdDt], [sUpdtBy], [dtUpdtOn], [sPrtyId], [iId], [iIsActv], [sTyp]) VALUES (11548, 46, N'Dual Degree(UG+PG)', NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, NULL, 1, NULL)
-INSERT [dbo].[CSTMENUM] ([iPK_CustEnum], [iFK_EnumNo], [sName], [sCrtdBy], [dtCrtdDt], [sUpdtBy], [dtUpdtOn], [sPrtyId], [iId], [iIsActv], [sTyp]) VALUES (11549, 46, N'Integrated', NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, NULL, 1, NULL)
-INSERT [dbo].[CSTMENUM] ([iPK_CustEnum], [iFK_EnumNo], [sName], [sCrtdBy], [dtCrtdDt], [sUpdtBy], [dtUpdtOn], [sPrtyId], [iId], [iIsActv], [sTyp]) VALUES (11550, 46, N'Diploma', NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, NULL, 1, NULL)
-INSERT [dbo].[CSTMENUM] ([iPK_CustEnum], [iFK_EnumNo], [sName], [sCrtdBy], [dtCrtdDt], [sUpdtBy], [dtUpdtOn], [sPrtyId], [iId], [iIsActv], [sTyp]) VALUES (11551, 46, N'Doctoral', NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, NULL, 1, NULL)
-INSERT [dbo].[CSTMENUM] ([iPK_CustEnum], [iFK_EnumNo], [sName], [sCrtdBy], [dtCrtdDt], [sUpdtBy], [dtUpdtOn], [sPrtyId], [iId], [iIsActv], [sTyp]) VALUES (11552, 46, N'Certificate', NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, NULL, 1, NULL)
-INSERT [dbo].[CSTMENUM] ([iPK_CustEnum], [iFK_EnumNo], [sName], [sCrtdBy], [dtCrtdDt], [sUpdtBy], [dtUpdtOn], [sPrtyId], [iId], [iIsActv], [sTyp]) VALUES (11553, 46, N'PG', NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, CAST(N'2023-02-10T12:24:28.607' AS DateTime), NULL, NULL, 1, NULL)
-
----------------------------------------------------
-
-ALTER proc [dbo].[USP_ADMIN_DeptCourseMap_Save]
-@Fk_DeptId int,
-@Fk_CourseId int,
-@Fk_SubjectId int,
-@iClassId int,
-@sDegree varchar(100)
-as
+if(@type = 'Delete')
 begin
-update CSTMENUM set  iId=@iClassId where iPK_CustEnum=@Fk_CourseId
-insert into DEPTCOURSEMAP
-values(@Fk_DeptId,@Fk_CourseId,@Fk_SubjectId,@sDegree)
-select @@IDENTITY
+		delete from APLCTNATTCH where iFk_AplcndetId in(select iPK_ID  from LNDINFMST where sApplGUID = @sApplGUID) and sFormName='Land&Information'
+		delete from LNDINFMST where iClgID = @iClgID and  ((nullif(sApplGUID,'') is null) or sApplGUID=@sApplGUID)
+		select 1 as Flag, 'Details Deleted Successfully...' as [Message]
 end
+if(@type = 'Insert')
+begin
+		DECLARE @Id int,
+			@landConvertDocumenttype int,
+			@landTitleDocumenttype int,
+			@landDocDocumenttype int,
+			@landAccureDocDocumenttype int,
+			@landNotConvertDocumenttype int,
+			@applPKID int,
+			@landAffidavittype int,
+			@UploadOrderDoctype int, 
+			@UploadAffidavittype int
 
------------------------------------------
+        SET @landConvertDocumenttype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=32 and sName='LandConvert Proof')
+		SET @landTitleDocumenttype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=32 and sName='Land Title Document')
+		SET @landDocDocumenttype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=32 and sName='Land Doc')
+		SET @landAccureDocDocumenttype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=32 and sName='Land Accure Type')
+		SET @landNotConvertDocumenttype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=32 and sName='Land not Convert')
+
+		SET @landAffidavittype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=32 and sName='Land Affidavit')
+		SET @UploadOrderDoctype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=32 and sName='Order Document')		
+		SET @UploadAffidavittype =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=32 and sName='AffidavitNotDoc')
+		
+	
+		INSERT INTO LNDINFMST(iDeptID,iCorsID,iClgID,iFinyr,iTrstID,sApplGUID,sLndArea,sLndDocType,sIsLndCnvrted,sOrdrNo,dtOrdrDate,sLndTyp,sKhasaraNo,dLndArea,dTotalArea,slndAccureTyp,dtCrtdOn,sOwnerName,dtAffidavitDate,dtNOTAffidavitDate)
+					VALUES(@iDeptID,@iCorsID,@iClgID,@iFinyr,@iTrstID,@sApplGUID,@sLndArea,@sLndDocType,@sIsLndCnvrted,@sOrdrNo,
+					case when (@dtOrdrDate is null) then 'NULL' else convert(datetime,@dtOrdrDate,103) end
+					,@sLndTyp,@sKhasaraNo,@dLndArea,@dTotalArea,@slndAccureTyp,getdate(),@sOwnerName,
+					case when (@dtAffidavitDate is null) then 'NULL' else convert(datetime,@dtAffidavitDate,103) end
+					,case when (@dtNOTAffidavitDate is null) then 'NULL' else convert(datetime,@dtNOTAffidavitDate,103) end)
+			
+		select @iDeptID = iFKDEPT_ID,@iCorsID=iFK_CORS_ID,@iClgID=iFKCLG_ID,@iFinyr=iFK_Finyr,@iTrstID=iFKTst_ID from MST_Apln  where sGUID = @sApplGUID	
+		if(@sEntryType='College Level')
+		begin
+			update LNDINFMST set iDeptID = @iDeptID,iCorsID=1001,iClgID=@iClgID,iFinyr=@iFinyr,iTrstID=@iTrstID  where iClgID = @iClgID
+		end
+		else
+		begin
+			update LNDINFMST set iDeptID = @iDeptID,iCorsID=@iCorsID,iClgID=@iClgID,iFinyr=@iFinyr,iTrstID=@iTrstID  where iClgID = @iClgID
+		end
+
+		update MST_Apln set iLndInf =1 where iFKCLG_ID=@iClgID --and iFK_CORS_ID=@iCorsID 
 
 
-// 13-3-2022 Management Committee
+		SELECT @Id=@@IDENTITY
 
+		--print @Id
+
+		select @applPKID =iPK_ID from MST_Apln where sGUID = @sApplGUID
+
+		if(@LandConvert IS NOT NULL and len(@LandConvert) > 1)
+		begin
+		--landConvert
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent,iFk_TrstId,iFk_clgId)
+		VALUES (@applPKID,@Id,'Land&Information',CAST(@LandConvert AS VARBINARY(max)),@landConvertDocumenttype,1,GETDATE(),@LandConvertExtension,@LandConvertContentType,@iTrstID,@iClgID)
+		end
+
+		if(@LandTitle IS NOT NULL and len(@LandTitle) > 1 )
+		begin
+		--landTitle
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent,iFk_TrstId,iFk_clgId)
+		VALUES (@applPKID,@Id,'Land&Information',CAST(@LandTitle AS VARBINARY(max)),@landTitleDocumenttype,1,GETDATE(),@LandTitleExtension,@LandTitleContentType,@iTrstID,@iClgID)
+		end
+
+		if(@LandDoc IS NOT NULL and len(@LandDoc) > 1)
+		begin
+		--landDoc
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent,iFk_TrstId,iFk_clgId)
+		VALUES (@applPKID,@Id,'Land&Information',CAST(@LandDoc AS VARBINARY(max)),@landDocDocumenttype,1,GETDATE(),@LandDocExtension,@LandDocContentType,@iTrstID,@iClgID)
+		end
+
+		if(@LandAccureDoc IS NOT NULL and len(@LandAccureDoc) > 1)
+		begin
+		--landAccure
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent,iFk_TrstId,iFk_clgId)
+		VALUES (@applPKID,@Id,'Land&Information',CAST(@LandAccureDoc AS VARBINARY(max)),@landAccureDocDocumenttype,1,GETDATE(),@LandAccureDocExtension,@LandAccureDocContentType,@iTrstID,@iClgID)
+		end
+
+		if(@LandNotConvertDoc IS NOT NULL and len(@LandNotConvertDoc) > 1)
+		begin
+		--landNotConvert
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent,iFk_TrstId,iFk_clgId)
+		VALUES (@applPKID,@Id,'Land&Information',CAST(@LandNotConvertDoc AS VARBINARY(max)),@landNotConvertDocumenttype,1,GETDATE(),@LandNotConvertDocExtension,@LandNotConvertDocContentType,@iTrstID,@iClgID)
+		end
+
+		--affidavit 
+		if(@LandConvertAffidavit IS NOT NULL and len(@LandConvertAffidavit) > 1)
+		begin
+		--affidavitConvert
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent,iFk_TrstId,iFk_clgId)
+		VALUES (@applPKID,@Id,'Land&Information',CAST(@LandConvertAffidavit AS VARBINARY(max)),@landNotConvertDocumenttype,1,GETDATE(),@LandConvertExtensionAffidavit,@LandConvertContentTypeAffidavit,@iTrstID,@iClgID)
+		end
+
+			--UploadOrderDocument
+		if(@UploadorderDoc IS NOT NULL and len(@UploadorderDoc) > 1)
+		begin
+		--UploadOrderDocument
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent,iFk_TrstId,iFk_clgId)
+		VALUES (@applPKID,@Id,'Land&Information',CAST(@UploadorderDoc AS VARBINARY(max)),@UploadOrderDoctype,1,GETDATE(),@UploadorderDocExtension,@UploadOrderDocContentt,@iTrstID,@iClgID)
+		end
+		
+			if(@UploadAffidavitNotDoc IS NOT NULL and len(@UploadAffidavitNotDoc) > 1)
+		begin
+		--UploadOrderDocument
+		INSERT INTO APLCTNATTCH (iFk_AplcnId,iFk_AplcndetId,sFormName,bAttachFile,iDocTyp,iIsActive,dtDateOfCrt,DocumentExtension,DocumentContent,iFk_TrstId,iFk_clgId)
+		VALUES (@applPKID,@Id,'Land&Information',CAST(@UploadAffidavitNotDoc AS VARBINARY(max)),@UploadAffidavittype,1,GETDATE(),@UploadAffidavitNotExtension,@UploadAffidavitNotContentt,@iTrstID,@iClgID)
+		end
+
+		select 1 as Flag, 'Details Saved Successfully...' as [Message]
+end
+end
+-----------------------------------------------------------------
 ALTER PROCEDURE [dbo].[USP_ADMIN_Trustee_SaveView] --'Details'
 (
 @Type VARCHAR(200),
@@ -124,7 +1209,8 @@ ALTER PROCEDURE [dbo].[USP_ADMIN_Trustee_SaveView] --'Details'
 
 @Letterfile nvarchar(max)=null,
 @LetterfileExtension nvarchar(200)=null,
-@LetterfileContentType nvarchar(200)=null
+@LetterfileContentType nvarchar(200)=null,
+@totalMemberCount int =0
 )
 AS 
 BEGIN  
@@ -226,15 +1312,17 @@ BEGIN
 		set @ConsentLetterType =(select iPK_CustEnum from CSTMENUM where iFK_EnumNo=32 and sName='ConsentLetterDocument') 
 
 
-        SELECT tr.PK_TrstDetId as Id,sPrsnName [Name],
-		tfo.sName TrustName,tr.sFatherName FatherName,tr.sGenderId GenderId,bi.sNameOfClg CollageId,cst.sName OccupationId, 
-		CASE WHEN iFk_RoleId=1099 THEN 'Prasedent' 
-		     WHEN iFk_RoleId=1098 THEN 'Chairman'
-			 WHEN iFk_RoleId=1097 THEN 'Directer'
-			 WHEN iFk_RoleId=1096 THEN 'Managing Directer' END
+        SELECT tr.PK_TrstDetId as Id,sPrsnName [Name],tr.sCollageId as collegeId,
+		tfo.sName TrustName,tr.sFatherName FatherName,tr.sGenderId GenderId,bi.sNameOfClg CollageName,cst.sName OccupationId, 
+		CASE WHEN iFk_RoleId=1099 THEN 'Staff Members'
+			 WHEN iFk_RoleId=11574 THEN 'Student Representative' 
+			 WHEN iFk_RoleId=11575 THEN 'others'
+		     WHEN iFk_RoleId=1098 THEN 'Treasurer'
+			 WHEN iFk_RoleId=1097 THEN 'Secretary'
+			 WHEN iFk_RoleId=1096 THEN 'President' END
 			 [Role],tr.sMobileNo AS Mobile,tr.sEmailId Email,
 		ad.iPk_AplcnAttch Aadhaar,
-		case when LEN(tr.AadhaarNo) = 12 then CONCAT(substring (tr.AadhaarNo,1,4),'-XXXX-', substring (tr.AadhaarNo,9,12))
+		case when LEN(tr.AadhaarNo) = 12 then CONCAT('XXXXXXXX-', substring (tr.AadhaarNo,9,12))
 		     else tr.AadhaarNo
 			 end
 	AadhaarNo
@@ -265,7 +1353,9 @@ BEGIN
 		left join CSTMENUM cst on cst.iPK_CustEnum=tr.sOccupationId
 		where tr.iFk_TrstInfoId=@TrustInfoId
 		--where iIsActive=1 
-        SELECT 1 AS [Flag] , 'Success' AS [Message]  
+        SELECT 1 AS [Flag] , 'Success' AS [Message] 
+		
+			
  END 
   IF(@Type='DocumentDetails')  
   BEGIN 
@@ -279,6 +1369,11 @@ BEGIN
    DELETE APLCTNATTCH where  sFormName='Trustee' and iFK_AplcndetId=@IdentityId
    SELECT 1 AS [Flag] , 'Success' AS [Message]  
  END
+ IF(@Type='IsPrimary')
+ Begin
+  IF EXISTS (SELECT * FROM TRSTDEPT WHERE iFk_TrstInfoId = @TrustInfoId and sCollageId=@CollageId and iIsPrimary=@isPrimary)
+	select 0 as [Flag] , 'Alreday exists iIsPrimary' as [Message]	  
+END
 END Try   
  BEGIN CATCH 
     INSERT INTO dbo.EXCPTNLOG(sExcptnMsg,bStoredProcdurExcptn,sExcptnSource,sExcptnUrl,iLogDt,bIsActv)
@@ -286,43 +1381,35 @@ END Try
     SELECT 5 AS [Flag],'Error has occurred!' AS [Message],Null as PartyId   
  END CATCH     
 END
--------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------
 
-ALTER Procedure [dbo].[USP_ADMIN_CustomFieldsByEnumNo_View]  
-(  
-@EnumNo Int  
-)  
-AS   
-BEGIN  
- BEGIN TRY  
- IF(@EnumNo>0)  
-   if(@EnumNo=37)  
-   Begin  
-    SELECT iId Id,sName CustomName,iId  from CSTMENUM where iFK_EnumNo=37 and ISNULL(iIsActv,1)=1  
-   End  
-   else if(@EnumNo=49)
-   Begin
-   Select iPK_CustEnum Id,sName CustomName from CSTMENUM where iFK_EnumNo=49 and ISNULL(iIsActv,1)=1  
-   End
-   else  
- BEGIN  
-   
-  SELECT iPK_CustEnum Id,sName CustomName  from CSTMENUM where iFK_EnumNo=29 and ISNULL(iIsActv,1)=1  
- END  
- ELSE  
- BEGIN  
-  SELECT iPK_CatId Id,sName CustomName from SRVCMST where ISNULL(iIsActv,1)=1  
- END  
- END TRY   
- BEGIN CATCH     
- INSERT INTO dbo.EXCPTNLOG(sExcptnMsg,bStoredProcdurExcptn,sExcptnSource,sExcptnUrl,iLogDt,bIsActv)  
- VALUES ('[dbo].[USP_ADMIN_CustomFieldsByEnumNo_View]','StoredProcedure','Error At Line No '+cast(ERROR_LINE() AS varchar) + ' ' + ''+cast(ERROR_Number() AS varchar) + ' ' + ERROR_MESSAGE (),null,GETDATE(),1)    
-  SELECT -1 as StatusCode, 'Check Error - ' + cast(ERROR_Number() as varchar) + ' ' + ERROR_MESSAGE () as [Message],'' AS Body  
- END CATCH  
-End  
-------------------------------------------
+Create PROCEDURE [dbo].[USP_ADMIN_Trustee_WomenCount] --[USP_ADMIN_Trustee_WomenCount] 1246,599
+(
+@CollageId int=0,
+@TrustId int=0
+)
+AS 
+BEGIN 
+BEGIN TRY 
+declare
+		@totalMemberCount decimal =0,
+		
+		@CountGender decimal =0,
+		@percent decimal=0
+Select @totalMemberCount= Count(*)  from TRSTDEPT
+print @totalMemberCount
+Select  @CountGender = Count(sGenderId)  from TRSTDEPT where sGenderId='FEMALE' and iFk_TrstInfoId=@TrustId and sCollageId=@CollageId 
+print @CountGender
+select cast((@CountGender*100)/ @totalMemberCount as decimal(18,2)) As WomenCount
+ SELECT 1 AS [Flag] , 'Success' AS [Message] 
 
 
+END Try 
+ BEGIN CATCH 
+    INSERT INTO dbo.EXCPTNLOG(sExcptnMsg,bStoredProcdurExcptn,sExcptnSource,sExcptnUrl,iLogDt,bIsActv)
+	VALUES ('[dbo].[USP_ADMIN_Trustee_SaveView]','StoredProcedure','Error At Line No '+cast(ERROR_LINE() AS varchar) + ' ' + ''+cast(ERROR_Number() AS varchar) + ' ' + ERROR_MESSAGE (),null,GETDATE(),1)		
+    SELECT 5 AS [Flag],'Error has occurred!' AS [Message],Null as PartyId   
+ END CATCH     
+END
 
-
-
+--------------------------------------------------------------------------

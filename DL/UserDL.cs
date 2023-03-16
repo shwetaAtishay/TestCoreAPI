@@ -1865,15 +1865,16 @@ namespace DL
             }
             return objResponseData;
         }
-        public ResponseData GetMenusAndSubmenus(string Type, string MenuId, string partyid)
+        public ResponseData GetMenusAndSubmenus(string Type, string MenuId, string partyid,int trustid)
         {
             try
             {
 
-                SqlParameter[] param = new SqlParameter[3];
+                SqlParameter[] param = new SqlParameter[4];
                 param[0] = new SqlParameter("@type", Type);
                 param[1] = new SqlParameter("@menuId", MenuId);
                 param[2] = new SqlParameter("@PartyId", partyid);
+                param[3] = new SqlParameter("@Id", trustid);
 
                 DataSet ds = BaseFunction.FillDataSet("[dbo].[USP_ADMIN_GetMasterDataForDropdown_View]", param);
                 if (ds != null && ds.Tables != null)

@@ -1,0 +1,193 @@
+﻿-- =============================================
+-- Author: <Vivek Choudhary>
+-- Create date: <22.Sep.2022>
+-- Description:	<This Procedure is used to save deptMaster application data for new college>
+-- =============================================
+
+ALTER Procedure [dbo].[USP_MASTER_AddDeptApplicationDataForNewCollege_Insert]
+@iFKCLG_ID int	  = null
+,@sGUID nvarchar(1000)= null
+,@sClgName nvarchar(1000)= null
+,@appType nvarchar(100) = null
+as
+begin
+if exists(select * from MST_Apln where iFKCLG_ID=@iFKCLG_ID and iSts is null and dtSubOn  is null)
+begin
+select 1 as StatusCode , 'Details Already Exists!' as [Message],'' as ApplicationNumber	
+end
+else
+begin
+
+declare
+@applicationNumber nvarchar(1000),@trustID int,@trustname nvarchar(1000)
+,@finYear nvarchar(20)
+,@finYearid int
+,@iFKDEPT_ID int=(select top 1 iDepartment from APLCTNBASICINFO where iPk_ClgID = @iFKCLG_ID)
+,@sDeptName nvarchar(1000) = (select sDeptName from DPETMST where iPK_DeptId=8)
+,@count int
+select top 1 @finYear =sName,@finYearid=iPk_Id from FinYear where iStts=1
+select @finYear = right(@finYear,4)+''+replace(right(@finYear,4),'20','')+1
+set @trustID = (select iFk_TrstInfoId from APLCTNBASICINFO where iPk_ClgID = @iFKCLG_ID)
+set @trustName = (select sName from TRSTINFO where PK_TrstInfoId = @trustID)
+
+select @count = count(*) from SUBMAST sub
+inner join CSTMENUM cors on cors.iPK_CustEnum= sub.iFK_CourseId
+inner join CSTMENUM subj on subj.iPK_CustEnum= sub.sSubjectName
+where iPk_ClgID=@iFKCLG_ID
+
+if(@count>0)
+while(@count>0)
+begin
+
+set @applicationNumber= cast(DATEPART(year,getdate()) as nvarchar(10)) + convert(nvarchar(100),(SELECT FORMAT(isnull(max(iPK_ID),0)+1,'000000') from MST_Apln),103)
+
+insert into MST_Apln(
+sApplNo
+,iFK_Finyr
+,iFKTst_ID
+,iFKCLG_ID
+,iFKDEPT_ID
+,iFK_CORS_ID
+,iFK_Subj_ID
+,sTrstName
+,sClgName
+,sDeptName
+,sCorsName
+,sSubjName
+,sFinYrName
+,dtCRT_On
+,sGUID
+,iNOCStatus
+,iFk_FormTypId
+)
+select apNo,finyID,tID,clgID,deptID,corsID,SubjectID,tName,clName,dpName,courseName,subjectName,finyr,creatdDate,sguid,sts,appType from(
+select ROW_NUMBER() OVER(ORDER BY sSubjectName ASC) as rn, @applicationNumber apNo,@finYearid finyID,@trustID tID,@iFKCLG_ID clgID,@iFKDEPT_ID deptID,sub.iFK_CourseId corsID,sub.sSubjectName as SubjectID, @trustName tName,@sClgName clName,@sDeptName dpName,cors.sName as courseName,subj.sName as subjectName,@finYear finyr,GETDATE() creatdDate,@sguid sguid,'Application Created' sts,@appType as appType from SUBMAST sub
+inner join CSTMENUM cors on cors.iPK_CustEnum= sub.iFK_CourseId
+inner join CSTMENUM subj on subj.iPK_CustEnum= sub.sSubjectName
+where iPk_ClgID=@iFKCLG_ID )as dt1 where rn = @count
+
+--select @count
+set @count= @count-1;
+
+end
+
+select 1 as StatusCode , 'Details Saved Successfully!' as [Message],@applicationNumber as ApplicationNumber	
+end
+end
+GO
+___________________________________________________________________________________________________________________________________________________
+
+Alter Procedure [dbo].[USP_ADMIN_CheckValidateDraftEntry_select] 
+ @courseID nvarchar(1000) = null --'2173,2189,2190'
+,@subjectID nvarchar(1000) = null--'11156,11067,11289,11244,11282,11472,11475'
+,@clg int = null--1246
+as
+begin
+	declare @crsCnt int,@subjCnt int, @isAllow int
+	,@newCourses nvarchar(max)
+	,@newSubject nvarchar(max)
+
+	select @crsCnt =count(*) from 
+	(select distinct iFK_CORS_ID from MST_Apln 
+	where iFKCLG_ID =@clg and iSts is null and dtSubOn  is null and iFK_CORS_ID in (select distinct value from string_split(@courseID,','))) as dt1
+
+	select @subjCnt =count(*) from 
+	(select distinct iFK_Subj_ID from MST_Apln 
+	where iFKCLG_ID =@clg and iSts is null and dtSubOn  is null and iFK_Subj_ID in (select distinct value from string_split(@subjectID,','))) as dt2
+
+	if(@crsCnt>0 or @subjCnt>0)
+	begin
+		set @isAllow =0
+	end
+
+	if(@crsCnt=0 or @subjCnt=0)
+	begin
+		set @isAllow =1
+	end
+
+
+	declare @tblItem as table(
+	id int identity(1,1),
+	itemID int,
+	itemName nvarchar(1000),
+	itemType nvarchar(1000)
+	)
+
+	;with Checkcourses
+	as (
+	select iFK_CORS_ID,sCorsName from MST_Apln 
+	where iFKCLG_ID =@clg and iSts is null and dtSubOn  is null and iFK_CORS_ID in (select distinct value from string_split(@courseID,','))
+	)
+
+	insert into @tblItem
+	select distinct value,enum.sname,'Course' from string_split(@courseID,',') t inner join 
+	CSTMENUM enum on enum.iPK_CustEnum = t.value
+	where t.value not in (select iFK_CORS_ID from Checkcourses)
+
+	;with Checksubject
+	as (
+	select distinct iFK_Subj_ID,sSubjName from MST_Apln 
+	where iFKCLG_ID =@clg and iSts is null and dtSubOn  is null and iFK_Subj_ID in (select distinct value from string_split(@subjectID,',')))
+
+	insert into @tblItem
+	select distinct value,enum.sname,'Subject' from string_split(@subjectID,',') t1 inner join 
+	CSTMENUM enum on enum.iPK_CustEnum = t1.value
+	where t1.value not in (select iFK_Subj_ID from Checksubject)
+
+	--select * from @tblItem
+
+	select @newCourses = STRING_AGG(itemName, ', ') from @tblItem where itemType='Course'
+
+	select @newSubject = STRING_AGG(itemName, ', ') from @tblItem where itemType='Subject'
+
+	select @isAllow allow, @newCourses Courses,@newSubject Subjects
+end
+Go
+________________________________________________________________________________________________________________________________________________________________________
+ALTER PROCEDURE [dbo].[USP_ADMIN_GetCollegeDetails_Select] --52
+ @iPk_ClgID int =int
+as
+begin
+	declare @backwardtehsil int, @fee decimal(18,0),@clgType nvarchar(1000)
+
+	set @backwardtehsil = (select  isnull(iIsBackward,0) from TEHSILMST where iID = (select top 1 isnull(iFk_ThslId,0) from APLCTNBASICINFO where iPk_ClgID=@iPk_ClgID))
+	set @clgType = (select top 1 case when(iClgTyp=11491) then 'Co-Ed'  when (iClgTyp=11492) then 'Girls' when(iClgTyp=11493) then 'Law Co-Ed' when(iClgTyp=11494) then 'Law Girls' end from APLCTNBASICINFO where iPk_ClgID=@iPk_ClgID)
+
+	if(@backwardtehsil=0)
+	begin
+		set @fee = (select top 1 case when(@clgType='Co-Ed') then isnull(dCoEdu,0) when(@clgType='Girls') then isnull(dGirls,0) end from FeeMST)
+	end
+	if(@backwardtehsil=1)
+	begin
+		set @fee = (select top 1 case when(@clgType='Co-Ed') then isnull(dCoEdu_BR,0) when(@clgType='Girls') then isnull(dGirls_BR,0) end from FeeMST)
+	end
+
+	select sNameOfClg
+	,CONCAT(sAddressLine1,' ',sAddressLine2,' ',sAddressLine3) as clgAddress
+	,sEmailId as Email
+	,sMobileNo as Mobile
+	,iClgTyp
+	,clgType.sName as collegeType
+	,iFk_DistId as DistrictID
+	,concat(dist.sDistrict,' [ ',dist.sMangalName,' ]') District
+	,iFk_ThslId as TehsilID
+	,concat(teh.sTehsil,' [ ',teh.sMangalName,' ]') Tehsil
+	,isnull(@backwardtehsil,0) as backwardArea
+	,isnull(@fee,0) totalFee
+	from APLCTNBASICINFO clgMST
+	inner join CSTMENUM clgType on clgType.iPK_CustEnum = clgMST.iClgTyp
+	inner join DISTRICTMST dist on dist.iID = clgMST.iFk_DistId
+	left join TEHSILMST teh on teh.iID = clgMST.iFk_ThslId
+
+
+	where iPk_ClgID = @iPk_ClgID
+
+	select distinct crs.sName as CourseName,upper(subj.sName) as subjectName from SUBMAST
+	inner join CSTMENUM crs on crs.iPK_CustEnum= SUBMAST.iFK_CourseId
+	inner join CSTMENUM subj on subj.iPK_CustEnum= SUBMAST.sSubjectName
+	inner join MST_Apln apl on apl.iFK_CORS_ID =  SUBMAST.iFK_CourseId and apl.iFK_Subj_ID = SUBMAST.sSubjectName and apl.iFKCLG_ID =SUBMAST.iPk_ClgID
+
+	where iPk_ClgID = @iPk_ClgID
+	order by crs.sName
+end
+GO
