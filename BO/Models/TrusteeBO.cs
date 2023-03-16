@@ -359,6 +359,7 @@ namespace BO.Models
         {
             public int TypeId { get; set; }
             public int courseID { get; set; }
+            public string CourseType { get; set; }
             public string pkId { get; set; }
             public string subjectIdList { get; set; }
         }
@@ -366,7 +367,7 @@ namespace BO.Models
         {
             public int TypeId { get; set; }
             public int courseID { get; set; }
-
+            public string CourseType { get; set; }
             public string pkId { get; set; }
             public string subjectIdList { get; set; }
         }
@@ -374,6 +375,7 @@ namespace BO.Models
         {
             public int typeID { get; set; }
             public string pkId { get; set; }
+            public string CourseType { get; set; }
             public int courseID { get; set; }
             public int subID { get; set; }
         }
@@ -381,6 +383,7 @@ namespace BO.Models
         {
             public int typeID { get; set; }
             public string pkId { get; set; }
+            public string CourseType { get; set; }
             public int courseID { get; set; }
             public int subID { get; set; }
         }
