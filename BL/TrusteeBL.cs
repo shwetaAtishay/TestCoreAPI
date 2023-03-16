@@ -22,7 +22,15 @@ namespace BL
         {
             return objAdminDL.TrusteeList(TrustId);
         }
-
+        public ResponseData Women(string CollegeId, string TrustId)
+        {
+            return objAdminDL.WomenCount(CollegeId, TrustId);
+        }
+        public ResponseData IsPrime(string trustId, string CollegeId, string IsPrime)
+        {
+            return objAdminDL.IsPrimeStatus(trustId, CollegeId, IsPrime);
+           
+        }
         public List<TrusteeBO.TrusteeInfo> TrustInfoList()
         {
             return objAdminDL.TrustInfoList();

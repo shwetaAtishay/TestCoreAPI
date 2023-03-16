@@ -113,8 +113,20 @@ namespace DL
                             dat = null;
                         else
                             dat = Convert.ToDateTime(item.dtOrdrDate).ToString("dd.MM.yyyy");
+                        
+                        var AffidavitDate = "";
+                        if (string.IsNullOrEmpty(item.dtAffidavitDate) || item.dtAffidavitDate.Length <= 0 || item.dtAffidavitDate == "NA")
+                            AffidavitDate = null;
+                        else
+                            AffidavitDate = Convert.ToDateTime(item.dtAffidavitDate).ToString("dd.MM.yyyy");
 
-                        SqlParameter[] param = new SqlParameter[37];
+                        var NOTAffidavitDate = "";
+                        if (string.IsNullOrEmpty(item.dtNOTAffidavitDate) || item.dtNOTAffidavitDate.Length <= 0 || item.dtNOTAffidavitDate == "NA")
+                            NOTAffidavitDate = null;
+                        else
+                            NOTAffidavitDate = Convert.ToDateTime(item.dtNOTAffidavitDate).ToString("dd.MM.yyyy");
+
+                        SqlParameter[] param = new SqlParameter[45];
                         param[0] = new SqlParameter("@iDeptID", item.iDeptID);
                         param[1] = new SqlParameter("@iCorsID", item.iCorsID);
                         param[2] = new SqlParameter("@iClgID", item.iClgID);
@@ -156,6 +168,19 @@ namespace DL
                         param[34] = new SqlParameter("@LandConvertAffidavit", item.UploadConvertedDocumentAffidavit);
                         param[35] = new SqlParameter("@LandConvertExtensionAffidavit", item.UploadConvertedDocumentExtensionAffidavit);
                         param[36] = new SqlParameter("@LandConvertContentTypeAffidavit", item.UploadConvertedDocumentContentAffidavit);
+
+
+                        param[37] = new SqlParameter("@UploadorderDoc", item.UploadorderDoc);
+                        param[38] = new SqlParameter("@UploadorderDocExtension", item.UploadorderDocExtension);
+                        param[39] = new SqlParameter("@UploadOrderDocContentt", item.UploadOrderDocContentt);
+                        
+                        param[40] = new SqlParameter("@UploadAffidavitNotDoc", item.UploadAffidavitNotDoc);
+                        param[41] = new SqlParameter("@UploadAffidavitNotExtension", item.UploadAffidavitNotExtension);
+                        param[42] = new SqlParameter("@UploadAffidavitNotContentt", item.UploadAffidavitNotContentt);
+
+                        param[43] = new SqlParameter("@dtAffidavitDate",AffidavitDate);
+                        param[44] = new SqlParameter("@dtNOTAffidavitDate",NOTAffidavitDate);
+
 
                         ds = BaseFunction.FillDataSet("[dbo].[USP_ADMIN_Land_BuildingInfo_Save]", param);
                         if (ds != null && ds.Tables != null && ds.Tables.Count > 0)
