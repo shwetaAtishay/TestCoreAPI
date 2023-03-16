@@ -1020,5 +1020,36 @@ namespace TestCoreAPI.Controllers
             return objResponseData;
         }
         #endregion
+
+
+        [HttpPost]
+        [Route("GetOldData")]
+        public ResponseData GetOldData(int clgID, string type)
+        {
+            ResponseData objResponseData = new ResponseData();
+            List<Dropdown> ListRequest = new List<Dropdown>();
+            ListRequest = _MasterBL.GetOldData(clgID, type);
+            //string raw = JObject.FromObject(new { ListRequest }).ToString();
+            //raw = EncryptDecrypt.EncryptRaw(raw);
+            if (ListRequest != null)
+            {
+                objResponseData.Data = ListRequest; ;
+                //objResponseData.Body = raw;
+                objResponseData.ResponseCode = "000";
+                objResponseData.Message = "List category and Sub";
+                objResponseData.statusCode = 1;
+            }
+            else
+            {
+
+                objResponseData.Data = null;
+                objResponseData.ResponseCode = "000";
+                objResponseData.Message = "Data Not Available";
+                objResponseData.statusCode = 0;
+
+            }
+
+            return objResponseData;
+        }
     }
 }

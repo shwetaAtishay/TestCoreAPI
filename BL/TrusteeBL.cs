@@ -206,5 +206,6 @@ namespace BL
             return objAdminDL.GetFacilitesImagesList(GUID, Identity);
 
         }
+
     }
 }

@@ -1837,5 +1837,52 @@ namespace DL
             return objList;
 
         }
+
+        public List<Dropdown> GetOldData(int clgID, string type)
+        {
+            List<Dropdown> objList = new List<Dropdown>();
+            try
+            {
+                DataSet ds = new DataSet();
+
+                SqlParameter[] param = new SqlParameter[2];
+
+                param[0] = new SqlParameter("@ColId", clgID);
+                param[1] = new SqlParameter("@type", type);
+               
+
+                ds = BaseFunction.FillDataSet("[dbo].[Usp_ArchitecDump_Data]", param);
+
+                if (ds != null && ds.Tables != null && ds.Tables[0].Rows.Count > 0)
+                {
+                    objList = new List<Dropdown>();
+
+                    for (int i = 0; i < ds.Tables[0].Rows.Count; i++)
+                    {
+
+                        Dropdown obj = new Dropdown();
+                        obj.Id = ds.Tables[0].Rows[i]["Id"].NulllToString();
+                        obj.Text = ds.Tables[0].Rows[i]["text"].NulllToString();
+                      
+
+
+                        objList.Add(obj);
+
+                    }
+
+                }
+                else
+                {
+                    objList = null;
+                }
+            }
+            catch (Exception e)
+            {
+                objList = null;
+                ExceptionLogDL.SendExcepToDB(e, 0, "Class : AdminDL / Function : GetRegistratedUsers");
+            }
+            return objList;
+
+        }
     }
 }
