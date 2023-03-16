@@ -33,6 +33,20 @@ namespace TestCoreAPI.Controllers
             //TrusteeBO.Trustee _result = new TrusteeBO.Trustee();
             return _objTrusteeBL.TrusteeList(TrustId);
         }
+        [HttpGet]
+        [Route("WomenCount")]
+        public ResponseData WomenCount(string CollegeId, string TrustId)
+        {
+            //TrusteeBO.Trustee _result = new TrusteeBO.Trustee();
+            return _objTrusteeBL.Women(CollegeId, TrustId);
+        }
+        [HttpGet]
+        [Route("chkIsPrime")]
+        public ResponseData chkIsPrime(string trustId, string CollegeId,string IsPrime)
+        {
+            //TrusteeBO.Trustee _result = new TrusteeBO.Trustee();
+            return _objTrusteeBL.IsPrime(trustId, CollegeId, IsPrime);
+        }
 
         [HttpPost]
         [Route("DocumentDetail")]
