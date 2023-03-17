@@ -173,5 +173,9 @@ namespace BL
         {
             return objMasterDL.GetFeeTRNList(Id);
         }
+        public List<Dropdown> GetOldData(int clgID, string type)
+        {
+            return objMasterDL.GetOldData(clgID, type);
+        }
     }
 }

@@ -214,6 +214,7 @@ namespace BL
             return objAdminDL.GetFacilitesImagesList(GUID, Identity);
 
         }
+
         
         public ResponseData CheckDraftValidationForEntry(int clgID, string courses, string subjects)
         {
