@@ -1,0 +1,276 @@
+﻿alter table MST_Apln
+add isAppliedNOC int
+---------------------------------------------------------------------------------------------------------------------
+Create proc USP_Report_TrstClgwise_DraftsData
+
+as
+
+ create table #temp(Id int identity(1,1),TrustName varchar(2500),ClgName varchar(2500),NoOfDraft int,DraftSubmittedToDept int,CancleDrafts int)
+
+  insert into #temp
+  select Upper(sTrstName),sClgName,0 [No Of Drafts],0 [Draft Submit to Dept],0 [Cancle Drafts] from MST_Apln
+  --where  dtCRT_On is not null
+  group by sTrstName,sClgName
+
+
+ update #temp
+ set CancleDrafts=IsCancled
+ from #temp 
+ inner join (select sTrstName,sClgName,count(*) IsCancled from MST_Apln  where  isnull(iIsCancled,0)=1 group by sTrstName,sClgName)
+ m on m.sTrstName=#temp.TrustName and m.sClgName=#temp.ClgName
+
+ update #temp
+ set NoOfDraft=DrftCount
+ from #temp 
+ inner join (select sTrstName,sClgName,count(*) DrftCount from MST_Apln  where     dtCRT_On is not null group by sTrstName,sClgName)
+ m on m.sTrstName=#temp.TrustName and m.sClgName=#temp.ClgName
+
+
+ update #temp
+ set DraftSubmittedToDept=DraftSubmt
+ from #temp 
+ inner join (select sTrstName,sClgName,count(*) DraftSubmt from MST_Apln  where    dtSubOn is not null and isnull(iIsSub2Dept,0) = 1 group by sTrstName,sClgName)
+ m on m.sTrstName=#temp.TrustName and m.sClgName=#temp.ClgName
+
+ select * from #temp
+ order by TrustName
+drop table #temp
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+Create procedure USP_Operation_GetDetailsForPreview --1246
+@clgId int = null
+as
+begin
+declare @trustID int
+	select top 1 @trustID = iFk_TrstInfoId
+	from APLCTNBASICINFO where iPk_ClgID = @clgId
+	select top 1 upper(sNameOfClg) as CollegeName
+	,clg.sMobileNo as Mobile
+	,Upper(sAddressLine1) as [Address]
+	,iFk_TrstInfoId as TrustID
+	,upper(trst.sName) as TrustName
+	,iClgTyp as ClgTypeID
+	,upper(clgType.sName) as CollegeType
+	,sCollegeLevel as CollegeLevel
+	,isnull(iDepartment,0) as DepartmentID
+	,Upper(dpt.sDeptName) as DepartmentName
+	,isnull(iFk_DistId,0) as DistrictID
+	,upper(concat(dist.sDistrict,' [',dist.sMangalName,']')) as DistrictName
+	,isnull(iFk_ThslId,0) as TehsilID
+	,Upper(concat(teh.sTehsil,' [',teh.sMangalName,']')) as TehsilName
+	from APLCTNBASICINFO clg
+	left join DISTRICTMST dist on dist.iID = clg.iFk_DistId
+	left join TEHSILMST teh on teh.iID = clg.iFk_ThslId
+	left join DPETMST dpt on dpt.iPK_DeptId = clg.iDepartment
+	left join CSTMENUM clgType on clgType.iPK_CustEnum = clg.iClgTyp
+	inner join TRSTINFO trst  on trst.PK_TrstInfoId = clg.iFk_TrstInfoId
+	where iPk_ClgID = @clgId
+	select Upper(sPrsnName) as [Name], sMobileNo as Mobile, sEmailId as Email from TRSTDEPT where iFk_TrstInfoId =@trustID
+end
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- =============================================
+-- Author: <Vivek Choudhary>
+-- Create date: <06.feb.2022>
+-- Description:	<This Procedure is used to save Multiple NOC data>
+-- =============================================
+
+ALTER Procedure [dbo].[USP_ADMIN_AddMultipleNOC_Insert]
+@stypeID nvarchar(500) = null
+,@iFK_ClgID int = null
+,@iFK_DeptID int = null
+as
+begin
+declare @trustID int ,@applicationNumber nvarchar(1000)
+set @trustID = (select iFk_TrstInfoId from APLCTNBASICINFO where iPk_ClgID = @iFK_ClgID)
+set @applicationNumber= cast(DATEPART(year,getdate()) as nvarchar(10)) + convert(nvarchar(100),(SELECT FORMAT(isnull(max(ipkMstID),0)+1,'000000') from MST_DeptAppl),103)
+
+insert into MST_DeptAppl(
+sApplID
+,stypeID
+,iFK_ClgID
+,iFK_DeptID
+,iFK_TrstID
+,sCrtdBy
+,dtCrtdOn
+,istatus
+)
+values(
+@applicationNumber
+,@stypeID
+,@iFK_ClgID
+,@iFK_DeptID
+,@trustID
+,'admin'
+,getdate()
+,1
+)
+update MST_Apln set isAppliedNOC = 1 where iFKCLG_ID=@iFK_ClgID and iFKTst_ID=@trustID and iFKDEPT_ID=@iFK_DeptID
+select 1 as StatusCode , 'Details Saved Successfully!' as [Message],@applicationNumber as ApplicationNumber	
+end
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Update the procedure with following conditions "USP_ADMIN_GetMasterDataForDropdown_View"
+if(@type='ApplyNOC_CollegeForDepartment')
+begin
+	  --select distinct iPk_AplcnId as ID, Upper(clg.sNameOfClg) as Text, clg.dtAplcnDate
+	  --from DEPTVSCURS dpt
+	  --inner join APLCTNBASICINFO clg on clg.iPk_ClgID = dpt.iPk_AplcnId
+	  --where iFK_DeptId = @menuId 
+	  --and clg.iPk_ClgID in (select iFKCLG_ID from MST_Apln where iSts =1 and isnull(iIsCancled,0) = 0 and isnull(iIsSub2Dept,0) = 0)
+	  --and clg.iFk_TrstInfoId = @PartyId
+	  --order by clg.dtAplcnDate
+	  select distinct iPk_ClgID as ID, Upper(concat(clg.sNameOfClg,' [ ',apl.iFk_FormTypId,' ]'))  as Text
+	  from APLCTNBASICINFO clg 
+	  inner join MST_Apln apl on apl.iFKCLG_ID = clg.iPk_ClgID and iSts =1 and isnull(iIsCancled,0) = 0 and isnull(iIsSub2Dept,0) = 0
+	  where iDepartment = @menuId and clg.iFk_TrstInfoId = @PartyId and isnull(apl.isAppliedNOC,0) = 0
+end
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+if(@type='GetCollegeForDepartment')
+begin
+-----Added this Query by Vivek on 17.03.2023 To display the TNOC or PNOC Courses and subjects
+select distinct iPk_AplcnId as ID,cst.sName as CollegeType,  Upper(clg.sNameOfClg) as Text, clg.dtAplcnDate,clg.PNOC as ID1,
+	  Concat('Courses :- ',IsNull(STUFF((Select ', '+CSTMENUM.sName    
+				from (select Distinct iFK_CourseId ,DEPTVSCURS.iPk_AplcnId,value,Fk_StatusId,bIsTNOC,bIsPNOC from DEPTVSCURS cross apply string_split(Cast(iFK_CourseId as nvarchar(max)),',')) TNOC_course   
+				inner join CSTMENUM on TNOC_course.value=CSTMENUM.iPK_CustEnum    
+				where  TNOC_course.iPk_AplcnId=dpt.iPk_AplcnId and TNOC_course.Fk_StatusId=1 and isnull(TNOC_course.bIsTNOC,0)=1 and isnull(TNOC_course.bIsPNOC,0)=0
+				FOR XML PATH('')),1,1,''),'NA'),' | Subject :- ',
+	  IsNull(STUFF((Select ', '+CSTMENUM.sName+' [ '+crsn.sName+' ]'    
+				from (select DEPTVSCURS.iPk_AplcnId,value,iFK_CourseId,Fk_StatusId,bIsTNOC,bIsPNOC from DEPTVSCURS cross apply string_split(sSubjectDepart,',')) TNOC_Subject    
+				inner join CSTMENUM on TNOC_Subject.value=CSTMENUM.iPK_CustEnum  
+				inner join CSTMENUM crsn on TNOC_Subject.iFK_CourseId=crsn.iPK_CustEnum 
+				where  TNOC_Subject.iPk_AplcnId=dpt.iPk_AplcnId and TNOC_Subject.Fk_StatusId=1 and isnull(TNOC_Subject.bIsTNOC,0)=1 and isnull(TNOC_Subject.bIsPNOC,0)=0  
+				FOR XML PATH('')),1,1,''),'NA')) as Course_N_Subject_TNOC
+	,
+	  Concat('Courses :- ',IsNull(STUFF((Select ', '+CSTMENUM.sName    
+				from (select Distinct iFK_CourseId ,DEPTVSCURS.iPk_AplcnId,value,Fk_StatusId,bIsTNOC,bIsPNOC from DEPTVSCURS cross apply string_split(Cast(iFK_CourseId as nvarchar(max)),',')) PNOC_course   
+				inner join CSTMENUM on PNOC_course.value=CSTMENUM.iPK_CustEnum    
+				where  PNOC_course.iPk_AplcnId=dpt.iPk_AplcnId and PNOC_course.Fk_StatusId=1 and isnull(PNOC_course.bIsTNOC,0)=1 and isnull(PNOC_course.bIsPNOC,0)=1
+				FOR XML PATH('')),1,1,''),'NA'),' | Subjects :- ',IsNull(STUFF((Select ', '+CSTMENUM.sName +' [ '+crsn.sName+' ]'    
+				from (select DEPTVSCURS.iPk_AplcnId,value,Fk_StatusId,iFK_CourseId,bIsTNOC,bIsPNOC from DEPTVSCURS cross apply string_split(sSubjectDepart,',')) PNOC_Subject    
+				inner join CSTMENUM on PNOC_Subject.value=CSTMENUM.iPK_CustEnum 
+				inner join CSTMENUM crsn on PNOC_Subject.iFK_CourseId=crsn.iPK_CustEnum
+				where  PNOC_Subject.iPk_AplcnId=dpt.iPk_AplcnId and PNOC_Subject.Fk_StatusId=1 and (isnull(PNOC_Subject.bIsTNOC,0)=1 and isnull(PNOC_Subject.bIsPNOC,0)=1 or isnull(PNOC_Subject.bIsTNOC,0)=0 and isnull(PNOC_Subject.bIsPNOC,0)=1 )
+				FOR XML PATH('')),1,1,''),'NA')) as Course_N_Subject_PNOC
+	from DEPTVSCURS dpt
+  inner join APLCTNBASICINFO clg on clg.iPk_ClgID = dpt.iPk_AplcnId
+  inner join CSTMENUM cst on cst.iPK_CustEnum=clg.iClgTyp
+  where iFK_DeptId = @menuId and clg.iFk_TrstInfoId =@PartyId and ( dpt.bIsTNOC=1 or  dpt.bIsPNOC=1)
+  order by clg.dtAplcnDate desc
+-----Added this Query by Vivek on 17.03.2023 To display the TNOC or PNOC Courses and subjects
+
+--Commented by Vivek on 17.03.2023----
+----select distinct iPk_AplcnId as ID,cst.sName as CollegeType,  Upper(clg.sNameOfClg) as Text, clg.dtAplcnDate,(case when bIsTNOC=1 then 'Active'else 'Deactive' end) TNOCStatus ,(case when bIsPNOC=1 then 'Active'else 'Deactive' end) PNOCStatus,
+----	  (select count(*) from MST_Apln where iFKCLG_ID = clg.iPk_ClgID ) PartyID,
+----	  IsNull(STUFF((Select ','+CSTMENUM.sName    
+----				from (select Distinct iFK_CourseId ,DEPTVSCURS.iPk_AplcnId,value from DEPTVSCURS cross apply string_split(Cast(iFK_CourseId as nvarchar(max)),',')) T1    
+----				inner join CSTMENUM on T1.value=CSTMENUM.iPK_CustEnum    
+----				where  T1.iPk_AplcnId=dpt.iPk_AplcnId    
+----				FOR XML PATH('')),1,1,''),'NA') CourseName
+----	  ,IsNull(STUFF((Select ','+CSTMENUM.sName    
+----				from (select DEPTVSCURS.iPk_AplcnId,value,Fk_StatusId from DEPTVSCURS cross apply string_split(sSubjectDepart,',')) T1    
+----				inner join CSTMENUM on T1.value=CSTMENUM.iPK_CustEnum    
+----				where  T1.iPk_AplcnId=dpt.iPk_AplcnId   and T1.Fk_StatusId =1
+----				FOR XML PATH('')),1,1,''),'NA') subjectName,
+----				isnull(dpt.bIsTNOC,0) bIsTNOC, isnull(dpt.bIsPNOC,0) bIsPNOC
+----	  from DEPTVSCURS dpt
+----  inner join APLCTNBASICINFO clg on clg.iPk_ClgID = dpt.iPk_AplcnId
+----  inner join CSTMENUM cst on cst.iPK_CustEnum=clg.iClgTyp
+----  where iFK_DeptId = @menuId and clg.iFk_TrstInfoId =@PartyId and ( dpt.bIsTNOC=1 or  dpt.bIsPNOC=1)
+----  order by clg.dtAplcnDate desc
+ --Commented by Vivek on 17.03.2023----
+end
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+if(@type='GetCourseForCollege')
+begin
+  
+  select distinct iFK_CourseId as ID, concat(corsEnum.sName,' ['+dpt.sDegree+']') as Text
+from DEPTVSCURS apl
+inner join CSTMENUM corsEnum  on corsEnum.iPK_CustEnum = apl.iFK_CourseId
+inner join DEPTCOURSEMAP dpt on dpt.Fk_CourseId = apl.iFK_CourseId
+where iPk_AplcnId = @menuId 
+--and (isnull(Fk_StatusId,0) = 1 or isnull(Fk_StatusId,0) = 3) and isnull(bIsPNOC,0)=0
+----and ((isnull(apl.bIsTNOC,0)=1 and isnull(apl.bIsPNOC,0)=0) or (isnull(apl.bIsTNOC,0)=0 and isnull(apl.bIsPNOC,0)=0) )
+order by concat(corsEnum.sName,' ['+dpt.sDegree+']')
+
+--select distinct iFK_CourseId as ID, corsEnum.sName as Text 
+--from DEPTVSCURS apl
+--inner join CSTMENUM corsEnum  on corsEnum.iPK_CustEnum = apl.iFK_CourseId
+--where iPk_AplcnId = @menuId 
+--and ((isnull(apl.bIsTNOC,0)=1 and isnull(apl.bIsPNOC,0)=0) or (isnull(apl.bIsTNOC,0)=0 and isnull(apl.bIsPNOC,0)=0) )
+--order by corsEnum.sName
+ 
+--select distinct iFK_CourseId as ID, corsEnum.sName as Text from SUBMAST apl
+--inner join CSTMENUM corsEnum  on corsEnum.iPK_CustEnum = apl.iFK_CourseId
+--where iPk_ClgID = @menuId and ((isnull(apl.bIsTNOC,0)=1 and isnull(apl.bIsPNOC,0)=0) or (isnull(apl.bIsTNOC,0)=0 and isnull(apl.bIsPNOC,0)=0) )
+--order by corsEnum.sName
+end
+------------------------------------------------------------------------------------------------------------------------------------------------
+if(@type='GetCoursesForCollegeOLDNOC1')
+begin
+	--select distinct iFK_CourseId as ID, enum.sName as Text from DEPTVSCURS cors
+	--inner join APLCTNBASICINFO clg on clg.iPk_ClgID = cors.iPk_AplcnId
+	--inner join CSTMENUM enum on enum.iPK_CustEnum = cors.iFK_CourseId
+	--where clg.iPk_ClgID = @menuId
+
+	--	select distinct SUBMAST.iFK_CourseId as ID, Upper(enum.sName) as Text from SUBMAST
+	--inner join CSTMENUM enum on enum.iPK_CustEnum = SUBMAST.iFK_CourseId
+	--left join MST_Apln draft on draft.iFKCLG_ID=SUBMAST.iPk_ClgID and draft.iFK_CORS_ID=SUBMAST.iFK_CourseId
+	--where iPk_ClgID =@menuId and (isnull(bIsTNOC,0)=1 or isnull(bIsPNOC,0)=1)
+	--order by Upper(enum.sName)
+
+	--select distinct SUBMAST.iFK_CourseId as ID, Upper(enum.sName) as Text from DEPTVSCURS SUBMAST
+	--inner join CSTMENUM enum on enum.iPK_CustEnum = SUBMAST.iFK_CourseId
+	--left join MST_Apln draft on draft.iFKCLG_ID=SUBMAST.iPk_AplcnId and draft.iFK_CORS_ID=SUBMAST.iFK_CourseId
+	--where iPk_AplcnId =@menuId and (isnull(bIsTNOC,0)=1 or isnull(bIsPNOC,0)=1)
+	--order by Upper(enum.sName)
+
+	--select distinct SUBMAST.iFK_CourseId as ID, Upper(enum.sName) as Text from SUBMAST
+	--inner join CSTMENUM enum on enum.iPK_CustEnum = SUBMAST.iFK_CourseId
+	--left join MST_Apln draft on draft.iFKCLG_ID=SUBMAST.iPk_ClgID and draft.iFK_CORS_ID=SUBMAST.iFK_CourseId
+	--inner join DEPTVSCURS d on  d.iFK_CourseId = draft.iFK_CORS_ID and d.sSubjectDepart = draft.iFK_Subj_ID and d.iPk_AplcnId = draft.iFKCLG_ID and d.iFk_TrstInfoId = draft.iFKTst_ID
+	--where iPk_ClgID =@menuId and isnull(Fk_StatusId,0) = 1 and isnull(d.bIsPNOC,0)=0
+	--order by Upper(enum.sName)
+
+	select distinct SUBMAST.iFK_CourseId as ID, Upper(enum.sName) as Text from SUBMAST
+	inner join CSTMENUM enum on enum.iPK_CustEnum = SUBMAST.iFK_CourseId
+	--left join MST_Apln draft on draft.iFKCLG_ID=SUBMAST.iPk_ClgID and draft.iFK_CORS_ID=SUBMAST.iFK_CourseId
+	inner join DEPTVSCURS d on  d.iFK_CourseId = SUBMAST.iFK_CourseId and d.sSubjectDepart = SUBMAST.sSubjectName and d.iPk_AplcnId = SUBMAST.iPk_ClgID --and d.iFk_TrstInfoId = draft.iFKTst_ID
+	where iPk_ClgID =@menuId --and isnull(Fk_StatusId,0) = 1 and isnull(d.bIsPNOC,0)=0
+	order by Upper(enum.sName)
+end
+----------------------------------------------------------------------------------------------------------------------------------------------------
+
+if(@type='GetSubjectForCourse')
+begin
+--select distinct dpt.sSubjectName as ID,upper(subj.sName) as Text
+--from SUBMAST dpt
+--inner join CSTMENUM subj on subj.iPK_CustEnum = dpt.sSubjectName
+--where iFK_CourseId = @menuId
+--order by upper(subj.sName)
+
+--select distinct cast(dpt.iFK_CourseId as nvarchar(10))+'-'+ cast(dpt.sSubjectDepart as nvarchar(10)) as ID,upper(cors.sName)+' : '+UPPER(subj.sName) as Text
+--from DEPTVSCURS dpt
+--inner join CSTMENUM subj on subj.iPK_CustEnum = dpt.sSubjectDepart
+--inner join CSTMENUM cors on cors.iPK_CustEnum = dpt.iFK_CourseId
+--where iFK_CourseId in(select value from string_split(@menuId,','))  and ((isnull(dpt.bIsTNOC,0)=1 and isnull(dpt.bIsPNOC,0)=0) or (isnull(dpt.bIsTNOC,0)=0 and isnull(dpt.bIsPNOC,0)=0) ) and iPk_AplcnId=@PartyId
+--order by upper(cors.sName)+' : '+UPPER(subj.sName)
+
+--select distinct cast(dpt.iFK_CourseId as nvarchar(10))+'-'+ cast(dpt.sSubjectName as nvarchar(10)) as ID,upper(cors.sName)+' : '+UPPER(subj.sName) as Text
+--from SUBMAST dpt
+--inner join CSTMENUM subj on subj.iPK_CustEnum = dpt.sSubjectName
+--inner join CSTMENUM cors on cors.iPK_CustEnum = dpt.iFK_CourseId
+
+--where iFK_CourseId in(select value from string_split(@menuId,','))  and ((isnull(dpt.bIsTNOC,0)=1 and isnull(dpt.bIsPNOC,0)=0) or (isnull(dpt.bIsTNOC,0)=0 and isnull(dpt.bIsPNOC,0)=0) )
+--order by upper(cors.sName)+' : '+UPPER(subj.sName)
+
+select distinct cast(dpt.iFK_CourseId as nvarchar(10))+'-'+ cast(dpt.sSubjectName as nvarchar(10)) as ID,upper(cors.sName)+' : '+UPPER(subj.sName) as Text
+from SUBMAST dpt
+inner join CSTMENUM subj on subj.iPK_CustEnum = dpt.sSubjectName
+inner join CSTMENUM cors on cors.iPK_CustEnum = dpt.iFK_CourseId
+
+where iFK_CourseId in(select value from string_split(@menuId,','))  --and ((isnull(dpt.bIsTNOC,0)=1 and isnull(dpt.bIsPNOC,0)=0) or (isnull(dpt.bIsTNOC,0)=0 and isnull(dpt.bIsPNOC,0)=0) ) 
+and iPk_ClgID=@PartyId
+order by upper(cors.sName)+' : '+UPPER(subj.sName)
+end

@@ -2590,5 +2590,85 @@ namespace DL
 
         }
 
+        public ResponseData GetCollegeDetailsForPreview(int clgID)
+        {
+
+            DataSet ds = new DataSet();
+            try
+            {
+                SqlParameter[] param = new SqlParameter[1];
+                param[0] = new SqlParameter("@clgId", clgID);
+             
+                ds = BaseFunction.FillDataSet("[dbo].[USP_Operation_GetDetailsForPreview]", param);
+                if (ds != null && ds.Tables != null && ds.Tables.Count > 0)
+                {
+                    if (ds.Tables[0].Rows.Count > 0)
+                    {
+
+                        CollegeDetailsForPreview preview = new CollegeDetailsForPreview();
+                        List<TrustMembers> trustMembers = new List<TrustMembers>();
+                        preview.CollegeName = ds.Tables[0].Rows[0]["CollegeName"].NulllToString();
+                        preview.Mobile = ds.Tables[0].Rows[0]["Mobile"].NulllToString();
+                        preview.Address = ds.Tables[0].Rows[0]["Address"].NulllToString();
+                        preview.TrustID = ds.Tables[0].Rows[0]["TrustID"].NulllToInt();
+                        preview.TrustName = ds.Tables[0].Rows[0]["TrustName"].NulllToString();
+                        preview.ClgTypeID = ds.Tables[0].Rows[0]["ClgTypeID"].NulllToInt();
+                        preview.CollegeType = ds.Tables[0].Rows[0]["CollegeType"].NulllToString();
+                        preview.CollegeLevel = ds.Tables[0].Rows[0]["CollegeLevel"].NulllToString();
+                        preview.DepartmentID = ds.Tables[0].Rows[0]["DepartmentID"].NulllToInt();
+                        preview.DepartmentName = ds.Tables[0].Rows[0]["DepartmentName"].NulllToString();
+                        preview.DistrictID = ds.Tables[0].Rows[0]["DistrictID"].NulllToInt();
+                        preview.DistrictName = ds.Tables[0].Rows[0]["DistrictName"].NulllToString();
+                        preview.TehsilID = ds.Tables[0].Rows[0]["TehsilID"].NulllToInt();
+                        preview.TehsilName = ds.Tables[0].Rows[0]["TehsilName"].NulllToString();
+
+
+
+                        if (ds.Tables[1].Rows.Count>0)
+                        {
+                            for(int i = 0; i < ds.Tables[1].Rows.Count; i++)
+                            {
+                                TrustMembers trustmember = new TrustMembers();
+                                trustmember.Name = ds.Tables[1].Rows[i]["Name"].NulllToString();
+                                trustmember.Mobile = ds.Tables[1].Rows[i]["Mobile"].NulllToString();
+                                trustmember.Email = ds.Tables[1].Rows[i]["Email"].NulllToString();
+                                trustMembers.Add(trustmember);
+                            }
+                        }
+                        preview.TrustMembers = trustMembers;
+
+                        objResponseData1.statusCode = 1;
+                        objResponseData1.Message ="College Details For Preview";
+                        objResponseData1.ResponseCode = "200";
+                        objResponseData1.Data = preview;
+                    }
+                    else
+                    {
+                        objResponseData1.statusCode = 1;
+                        objResponseData1.Message = "No Details Found";
+                        objResponseData1.ResponseCode = "400";
+                        objResponseData1.Data = null;
+                    }
+                }
+                else
+                {
+                    objResponseData1.statusCode = 0;
+                    objResponseData1.Message = CustomMessage.NORECORDFOUND;
+                    objResponseData1.ResponseCode = CustomMessage.NORECORDFOUND_RESPONSECODE.ToString();
+                    objResponseData1.Data = null;
+                }
+            }
+            catch (Exception ex)
+            {
+                objResponseData1.statusCode = 0;
+                objResponseData1.Message = CustomMessage.EXCEPTIONOCCURRED;
+                objResponseData1.ResponseCode = CustomMessage.EXCEPTIONOCCURRED_RESPONSECODE.ToString();
+                objResponseData1.Data = null;
+                //ExceptionLogDL.WriteExceptionDB(ex, "NA", "api", "TrusteeDL:DocumentDetail", "UNOCapi", "NA");
+            }
+
+            return objResponseData1;
+        }
+
     }
 }
