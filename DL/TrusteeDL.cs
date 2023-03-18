@@ -1684,7 +1684,8 @@ namespace DL
                         {
                             foreach (var item in model.courseData)
                             {
-                                SaveTransationData(applicationNumber, item);
+                                if(item.TypeId!=0)
+                                    SaveTransationData(applicationNumber, item,model.iFKCLG_ID,model.iFKDEPT_ID);
                             }
                         }
 
@@ -1692,7 +1693,8 @@ namespace DL
                         {
                             foreach (var item in model.subjData)
                             {
-                                SaveTransationData(applicationNumber, new CourseDataForNOC { courseID = item.courseID, pkId = item.pkId, subjectIdList = item.subjectIdList, TypeId = item.TypeId });
+                                if (item.TypeId != 0)
+                                    SaveTransationData(applicationNumber, new CourseDataForNOC { courseID = item.courseID, pkId = item.pkId, subjectIdList = item.subjectIdList, TypeId = item.TypeId }, model.iFKCLG_ID, model.iFKDEPT_ID);
                             }
                         }
 
@@ -1700,7 +1702,8 @@ namespace DL
                         {
                             foreach (var item in model.TnocData)
                             {
-                                SaveTransationData(applicationNumber, new CourseDataForNOC { courseID = item.courseID, pkId = item.pkId, subjectIdList = item.subID.ToString(), TypeId = item.typeID });
+                                if (item.typeID != 0)
+                                    SaveTransationData(applicationNumber, new CourseDataForNOC { courseID = item.courseID, pkId = item.pkId, subjectIdList = item.subID.ToString(), TypeId = item.typeID, CourseType=item.CourseType }, model.iFKCLG_ID, model.iFKDEPT_ID);
                             }
                         }
 
@@ -1708,7 +1711,8 @@ namespace DL
                         {
                             foreach (var item in model.PnocData)
                             {
-                                SaveTransationData(applicationNumber, new CourseDataForNOC { courseID = item.courseID, pkId = item.pkId, subjectIdList = item.subID.ToString(), TypeId = item.typeID });
+                                if (item.typeID != 0)
+                                    SaveTransationData(applicationNumber, new CourseDataForNOC { courseID = item.courseID, pkId = item.pkId, subjectIdList = item.subID.ToString(), TypeId = item.typeID,CourseType=item.CourseType }, model.iFKCLG_ID, model.iFKDEPT_ID);
                             }
                         }
 
@@ -1734,24 +1738,26 @@ namespace DL
         }
 
 
-        public ResponseData SaveTransationData(string applicationNumber, CourseDataForNOC model)
+        public ResponseData SaveTransationData(string applicationNumber, CourseDataForNOC model,int clgid,int deptId)
         {
             var ds = new DataSet();
-            var draftid = "";
-            if (model.pkId == "" || !string.IsNullOrEmpty(model.pkId))
-            {
-                draftid = model.courseID.ToString();
-            }
-            else
-            {
-                draftid = model.pkId;
-            }
-            SqlParameter[] param = new SqlParameter[5];
+            //var draftid = "";
+            //if (model.pkId == "" || !string.IsNullOrEmpty(model.pkId))
+            //{
+            //    draftid = model.courseID.ToString();
+            //}
+            //else
+            //{
+            //    draftid = model.pkId;
+            //}
+            SqlParameter[] param = new SqlParameter[7];
             param[0] = new SqlParameter("@sFKDeptApplID", applicationNumber);
             param[1] = new SqlParameter("@iTypeID", model.TypeId);
             param[2] = new SqlParameter("@iCorsID", model.courseID);
             param[3] = new SqlParameter("@sSubID", model.subjectIdList);
-            param[4] = new SqlParameter("@sDraftAppID", draftid);
+            param[4] = new SqlParameter("@clgId", clgid);
+            param[5] = new SqlParameter("@deptid", deptId);
+            param[6] = new SqlParameter("@CourseType", model.CourseType);
 
             ds = BaseFunction.FillDataSet("[dbo].[USP_ADMIN_AddMultipleNOCTransection_Insert]", param);
 
