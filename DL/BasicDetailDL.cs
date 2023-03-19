@@ -606,7 +606,7 @@ namespace DL
             }
             return responseData;
         }
-        public ResponseData GetCollageDropDownListbytrustId(int Id, int trustid)
+        public ResponseData GetCollageDropDownListbytrustId(int Id, string trustid)
         {
             ResponseData responseData = new ResponseData();
             try

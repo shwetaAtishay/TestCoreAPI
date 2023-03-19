@@ -62,7 +62,7 @@ namespace BL
         {
             return objBasicDetailDL.GetSUbject(colId, couId, DataType, subjectlist);
         }
-        public ResponseData GetCollageDropDownListbytrustId(int Id, int trustid)
+        public ResponseData GetCollageDropDownListbytrustId(int Id, string trustid)
         {
             return objBasicDetailDL.GetCollageDropDownListbytrustId(Id, trustid);
         }

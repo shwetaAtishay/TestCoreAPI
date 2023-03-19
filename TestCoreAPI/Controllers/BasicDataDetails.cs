@@ -118,7 +118,7 @@ namespace TestCoreAPI.Controllers
         }
         [HttpGet]
         [Route("GetCollageDropDownListbytrustId")]
-        public ResponseData GetCollageDropDownListbytrustId(int Id, int trustid)
+        public ResponseData GetCollageDropDownListbytrustId(int Id, string trustid)
         {
             return ObjRate.GetCollageDropDownListbytrustId(Id, trustid);
         }

@@ -1,0 +1,176 @@
+﻿ALTER PROCEDURE [dbo].[USP_OPERATION_ApplyForNOC_View]--'GetCollageDetailsForApply'
+@Type nvarchar(100),
+@TrustId nvarchar(100)=null
+as
+begin
+IF(@Type='GetCollageDetailsForApply')
+BEGIN
+
+select 
+CL.iPk_ClgID CollageId,Tr.PK_TrstInfoId TrustInfoId,TR.sName as TrustName,Tr.sRgstrnNo as RegistrationNo,
+       CL.sNameOfClg CollageName,
+	   CL.sMobileNo Mobile
+	   ,CL.sEmailId Email
+	   ,CL.sWebsite WebsiteURL
+	   ,CL.sAdMobileNo AddMobileNo,
+	   CL.sAdPhNo AddPhoneNo,
+	     cast(att.bAttachFile as nvarchar(max)) CollageLogo,
+	   att.DocumentContent
+from APLCTNBASICINFO cl
+inner join TRSTINFO tr on tr.PK_TrstInfoId=cl.iFk_TrstInfoId
+LEFT join APLCTNATTCH att on att.iFk_AplcndetId=CL.iPk_ClgID and att.sFormName='Collage Details'
+--where tr.PK_TrstInfoId=@TrustId ------ Commented by vivek on 18.03.2023
+where tr.sRgstrnNo =@TrustId ------ Commented by vivek on 18.03.2023
+   
+   --SELECT CL.iPk_ClgID CollageId,Tr.PK_TrstInfoId TrustInfoId,TR.sName as TrustName,Tr.sRgstrnNo as RegistrationNo,
+   --    CL.sNameOfClg CollageName,
+	  -- CL.sMobileNo Mobile
+	  -- ,CL.sEmailId Email
+	  -- ,CL.sWebsite WebsiteURL
+	  -- ,CL.sAdMobileNo AddMobileNo,
+	  -- CL.sAdPhNo AddPhoneNo,
+	  -- cast(att.bAttachFile as nvarchar(max)) CollageLogo,
+	  -- att.DocumentContent,
+	  -- dept.sDeptName Deegree,
+	  -- course.sName Courses,
+	  -- Cou.iFK_CourseId,
+	  -- Cou.iFK_DeptId,
+	  -- Cou.iIsDrafted,
+	  -- Cou.bIsTNOC,
+	  --  Cou.bIsPNOC
+	  -- from APLCTNBASICINFO CL inner join TRSTINFO TR 
+   --    ON TR.PK_TrstInfoId=CL.iFk_TrstInfoId
+	  -- LEFT join APLCTNATTCH att on att.iFk_AplcndetId=CL.iPk_ClgID and att.sFormName='Collage Details'
+   --     left join DEPTVSCURS Cou on Cou.iFk_TrstInfoId=TR.PK_TrstInfoId and Cou. IPk_AplcnId=cl.iPk_ClgID
+	  -- left join DPETMST dept on dept.iPK_DeptId=Cou.iFK_DeptId
+	  -- left join CSTMENUM course on Cou.iFK_CourseId=course.iPK_CustEnum
+	  -- where (Cou.iIsDrafted is null or Cou.iIsDrafted=0 or Cou.iIsDrafted=1 or Cou.iIsDrafted=2) 
+	  -- and (Cou.bIsTNOC=0 and Cou.bIsPNOC=0) 
+	  -- and cl.iFk_TrstInfoId=@TrustId
+
+	   SELECT 1 AS [Flag] , 'Success' AS [Message] 
+END  
+
+end
+-------------------------------------------------------------------------------------------------------------------------
+
+ALTER Procedure [dbo].[Usp_Admin_Get_College_TrstId] 
+(
+@Id int,
+@trustid nvarchar(1000)=0
+)
+As
+Begin
+
+if(@Id=8)
+Begin
+------Commented by vivek on 18.03.2023 to get college against trust regNO
+--select iPk_ClgID Id,sNameOfClg Text  from APLCTNBASICINFO 
+--where iFk_TrstInfoId=@trustid  
+--order by sNameOfClg
+------Commented by vivek on 18.03.2023 to get college against trust regNO
+select iPk_ClgID Id,sNameOfClg Text  from APLCTNBASICINFO 
+where iPk_ClgID in (select iFk_AplcnId from TRSTINFO where sRgstrnNo = @trustid)
+order by sNameOfClg
+
+end
+else
+Begin
+select '0' Id,'NOData' Text  
+End
+
+
+End
+-------------------------------------------------------------------------------------------------------------------------
+Update the procedure with following conditions "USP_ADMIN_GetMasterDataForDropdown_View"
+
+if(@type='MstDeptApplicationList')
+begin
+select
+ T2.ipkMstID
+,T2.sApplID
+,T2.stypeID
+,T2.iFK_ClgID
+,clg.sNameOfClg as CollegeName
+,T2.iFK_DeptID
+,dept.sDeptName as Dept
+,T2.iFK_TrstID
+,trust.sName as Trust
+, STUFF((Select ', '+NOCCOUSTEMINFO.sName
+from (select MST_DeptAppl.ipkMstID,value from MST_DeptAppl cross apply string_split(stypeID,',')) T1
+inner join  NOCCOUSTEMINFO on T1.value=NOCCOUSTEMINFO.iNocCstId 
+where T1.ipkMstID = T2.ipkMstID
+FOR XML PATH('')),1,1,'')  stypeName
+,dtCrtdOn
+,dTotalFee
+,isnull(sum(hst.dPaidAMT),0) PaidAmnt
+,isnull(dTotalFee-sum(dPaidAMT),dTotalFee)  DueAMT
+,case when (isnull(dTotalFee-sum(dPaidAMT),dTotalFee))=0 then 'Your Application Is Submitted' else 'Pending Final Submission, Please upload challan copies' end as applStatus
+from 
+MST_DeptAppl T2  
+inner join APLCTNBASICINFO clg on clg.iPk_ClgID = T2.iFK_ClgID
+left join DPETMST dept on dept.iPK_DeptId = T2.iFK_DeptID
+inner join TRSTINFO trust on trust.PK_TrstInfoId = T2.iFK_TrstID
+left join MST_PMTHSTRY hst on hst.sFK_ApplID = T2.sApplID
+where clg.iFk_TrstInfoId = @PartyId
+group by T2.ipkMstID,T2.sApplID,T2.stypeID,T2.iFK_ClgID,clg.sNameOfClg,T2.iFK_DeptID,dept.sDeptName,T2.iFK_TrstID,trust.sName,dtCrtdOn,
+dTotalFee
+order by T2.dtCrtdOn desc
+end
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+if(@type='GetCollegeForDepartment')
+begin
+-----Added this Query by Vivek on 17.03.2023 To display the TNOC or PNOC Courses and subjects
+select distinct iPk_AplcnId as ID,cst.sName as CollegeType,  Upper(clg.sNameOfClg) as Text, clg.dtAplcnDate,clg.PNOC as ID1,
+	  Concat('Courses :- ',IsNull(STUFF((Select ', '+CSTMENUM.sName    
+				from (select Distinct iFK_CourseId ,DEPTVSCURS.iPk_AplcnId,value,Fk_StatusId,bIsTNOC,bIsPNOC from DEPTVSCURS cross apply string_split(Cast(iFK_CourseId as nvarchar(max)),',')) TNOC_course   
+				inner join CSTMENUM on TNOC_course.value=CSTMENUM.iPK_CustEnum    
+				where  TNOC_course.iPk_AplcnId=dpt.iPk_AplcnId and TNOC_course.Fk_StatusId=1 and isnull(TNOC_course.bIsTNOC,0)=1 and isnull(TNOC_course.bIsPNOC,0)=0
+				FOR XML PATH('')),1,1,''),'NA'),' | Subject :- ',
+	  IsNull(STUFF((Select ', '+CSTMENUM.sName+' [ '+crsn.sName+' ]'    
+				from (select DEPTVSCURS.iPk_AplcnId,value,iFK_CourseId,Fk_StatusId,bIsTNOC,bIsPNOC from DEPTVSCURS cross apply string_split(sSubjectDepart,',')) TNOC_Subject    
+				inner join CSTMENUM on TNOC_Subject.value=CSTMENUM.iPK_CustEnum  
+				inner join CSTMENUM crsn on TNOC_Subject.iFK_CourseId=crsn.iPK_CustEnum 
+				where  TNOC_Subject.iPk_AplcnId=dpt.iPk_AplcnId and TNOC_Subject.Fk_StatusId=1 and isnull(TNOC_Subject.bIsTNOC,0)=1 and isnull(TNOC_Subject.bIsPNOC,0)=0  
+				FOR XML PATH('')),1,1,''),'NA')) as Course_N_Subject_TNOC
+	,
+	  Concat('Courses :- ',IsNull(STUFF((Select ', '+CSTMENUM.sName    
+				from (select Distinct iFK_CourseId ,DEPTVSCURS.iPk_AplcnId,value,Fk_StatusId,bIsTNOC,bIsPNOC from DEPTVSCURS cross apply string_split(Cast(iFK_CourseId as nvarchar(max)),',')) PNOC_course   
+				inner join CSTMENUM on PNOC_course.value=CSTMENUM.iPK_CustEnum    
+				where  PNOC_course.iPk_AplcnId=dpt.iPk_AplcnId and PNOC_course.Fk_StatusId=1 and (isnull(PNOC_course.bIsTNOC,0)=1 and isnull(PNOC_course.bIsPNOC,0)=1 or isnull(PNOC_course.bIsTNOC,0)=0 and isnull(PNOC_course.bIsPNOC,0)=1)
+				FOR XML PATH('')),1,1,''),'NA'),' | Subjects :- ',IsNull(STUFF((Select ', '+CSTMENUM.sName +' [ '+crsn.sName+' ]'    
+				from (select DEPTVSCURS.iPk_AplcnId,value,Fk_StatusId,iFK_CourseId,bIsTNOC,bIsPNOC from DEPTVSCURS cross apply string_split(sSubjectDepart,',')) PNOC_Subject    
+				inner join CSTMENUM on PNOC_Subject.value=CSTMENUM.iPK_CustEnum 
+				inner join CSTMENUM crsn on PNOC_Subject.iFK_CourseId=crsn.iPK_CustEnum
+				where  PNOC_Subject.iPk_AplcnId=dpt.iPk_AplcnId and PNOC_Subject.Fk_StatusId=1 and (isnull(PNOC_Subject.bIsTNOC,0)=1 and isnull(PNOC_Subject.bIsPNOC,0)=1 or isnull(PNOC_Subject.bIsTNOC,0)=0 and isnull(PNOC_Subject.bIsPNOC,0)=1 )
+				FOR XML PATH('')),1,1,''),'NA')) as Course_N_Subject_PNOC
+	from DEPTVSCURS dpt
+  inner join APLCTNBASICINFO clg on clg.iPk_ClgID = dpt.iPk_AplcnId
+  inner join CSTMENUM cst on cst.iPK_CustEnum=clg.iClgTyp
+  where iFK_DeptId = @menuId and clg.iFk_TrstInfoId =@PartyId and ( dpt.bIsTNOC=1 or  dpt.bIsPNOC=1)
+  order by clg.dtAplcnDate desc
+-----Added this Query by Vivek on 17.03.2023 To display the TNOC or PNOC Courses and subjects
+
+--Commented by Vivek on 17.03.2023----
+----select distinct iPk_AplcnId as ID,cst.sName as CollegeType,  Upper(clg.sNameOfClg) as Text, clg.dtAplcnDate,(case when bIsTNOC=1 then 'Active'else 'Deactive' end) TNOCStatus ,(case when bIsPNOC=1 then 'Active'else 'Deactive' end) PNOCStatus,
+----	  (select count(*) from MST_Apln where iFKCLG_ID = clg.iPk_ClgID ) PartyID,
+----	  IsNull(STUFF((Select ','+CSTMENUM.sName    
+----				from (select Distinct iFK_CourseId ,DEPTVSCURS.iPk_AplcnId,value from DEPTVSCURS cross apply string_split(Cast(iFK_CourseId as nvarchar(max)),',')) T1    
+----				inner join CSTMENUM on T1.value=CSTMENUM.iPK_CustEnum    
+----				where  T1.iPk_AplcnId=dpt.iPk_AplcnId    
+----				FOR XML PATH('')),1,1,''),'NA') CourseName
+----	  ,IsNull(STUFF((Select ','+CSTMENUM.sName    
+----				from (select DEPTVSCURS.iPk_AplcnId,value,Fk_StatusId from DEPTVSCURS cross apply string_split(sSubjectDepart,',')) T1    
+----				inner join CSTMENUM on T1.value=CSTMENUM.iPK_CustEnum    
+----				where  T1.iPk_AplcnId=dpt.iPk_AplcnId   and T1.Fk_StatusId =1
+----				FOR XML PATH('')),1,1,''),'NA') subjectName,
+----				isnull(dpt.bIsTNOC,0) bIsTNOC, isnull(dpt.bIsPNOC,0) bIsPNOC
+----	  from DEPTVSCURS dpt
+----  inner join APLCTNBASICINFO clg on clg.iPk_ClgID = dpt.iPk_AplcnId
+----  inner join CSTMENUM cst on cst.iPK_CustEnum=clg.iClgTyp
+----  where iFK_DeptId = @menuId and clg.iFk_TrstInfoId =@PartyId and ( dpt.bIsTNOC=1 or  dpt.bIsPNOC=1)
+----  order by clg.dtAplcnDate desc
+ --Commented by Vivek on 17.03.2023----
+end

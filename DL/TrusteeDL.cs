@@ -2028,7 +2028,8 @@ namespace DL
             try
             {
                 SqlParameter[] param = new SqlParameter[3];
-                param[0] = new SqlParameter("@Type", "SubjectListDropDown");
+                //param[0] = new SqlParameter("@Type", "SubjectListDropDown");
+                param[0] = new SqlParameter("@Type", "StaffDtlSubjectListDropDown");
                 param[1] = new SqlParameter("@sGUID", sGUID);
                 param[2] = new SqlParameter("@CourseId", CourseId.NulllToInt());
                 DataSet ds = BaseFunction.FillDataSet("[dbo].[USP_ADMIN_SubjectListDropDown]", param);
@@ -2063,7 +2064,8 @@ namespace DL
             try
             {
                 SqlParameter[] param = new SqlParameter[2];
-                param[0] = new SqlParameter("@Type", "CourseListDropDown");
+                //param[0] = new SqlParameter("@Type", "CourseListDropDown");
+                param[0] = new SqlParameter("@Type", "StaffDtlCourse");
                 param[1] = new SqlParameter("@sGUID", sGUID);
                 DataSet ds = BaseFunction.FillDataSet("[dbo].[USP_ADMIN_SubjectListDropDown]", param);
                 if (ds != null && ds.Tables != null && ds.Tables[0].Rows.Count > 0)
