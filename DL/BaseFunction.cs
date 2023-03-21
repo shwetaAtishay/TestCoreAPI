@@ -48,11 +48,22 @@ namespace DL
             cmd = new SqlCommand(spName, con);
             cmd.CommandTimeout = 0;
             cmd.CommandType = CommandType.StoredProcedure;
+            try
+            {
+
             dt = new DataTable();
             adpt = new SqlDataAdapter(cmd);
             adpt.Fill(dt);
             con.Close();
             return dt;
+            }catch(Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                con.Close();
+            }
         }
 
         public static DataTable FillDataTable(string spName, SqlParameter[] param)
@@ -103,11 +114,22 @@ namespace DL
             cmd = new SqlCommand(spName, con);
             cmd.CommandTimeout = 0;
             cmd.CommandType = CommandType.StoredProcedure;
+            try
+            {
+
             ds = new DataSet();
             adpt = new SqlDataAdapter(cmd);
             adpt.Fill(ds);
             con.Close();
             return ds;
+            }catch(Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                con.Close();
+            }
         }
 
         public static DataSet FillDataSet(string spName, SqlParameter[] param)

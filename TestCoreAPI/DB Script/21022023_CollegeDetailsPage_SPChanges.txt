@@ -1,0 +1,57 @@
+﻿Update the procedure with following conditions "USP_ADMIN_GetMasterDataForDropdown_View"
+
+if(@type='GetCollegeForDepartment')
+begin
+-----Added this Query by Vivek on 17.03.2023 To display the TNOC or PNOC Courses and subjects
+select distinct iPk_AplcnId as ID,cst.sName as CollegeType,  Upper(clg.sNameOfClg) as Text, clg.dtAplcnDate,clg.PNOC as ID1,
+	  Concat('Courses :- ',IsNull(STUFF((Select ', '+CSTMENUM.sName    
+				from (select Distinct iFK_CourseId ,DEPTVSCURS.iPk_AplcnId,value,Fk_StatusId,bIsTNOC,bIsPNOC from DEPTVSCURS cross apply string_split(Cast(iFK_CourseId as nvarchar(max)),',')) TNOC_course   
+				inner join CSTMENUM on TNOC_course.value=CSTMENUM.iPK_CustEnum    
+				where  TNOC_course.iPk_AplcnId=dpt.iPk_AplcnId and TNOC_course.Fk_StatusId=1 and isnull(TNOC_course.bIsTNOC,0)=1 and isnull(TNOC_course.bIsPNOC,0)=0
+				FOR XML PATH('')),1,1,''),'NA'),' | Subject :- ',
+	  IsNull(STUFF((Select ', '+CSTMENUM.sName+' [ '+crsn.sName+' ]'    
+				from (select DEPTVSCURS.iPk_AplcnId,value,iFK_CourseId,Fk_StatusId,bIsTNOC,bIsPNOC from DEPTVSCURS cross apply string_split(sSubjectDepart,',')) TNOC_Subject    
+				inner join CSTMENUM on TNOC_Subject.value=CSTMENUM.iPK_CustEnum  
+				inner join CSTMENUM crsn on TNOC_Subject.iFK_CourseId=crsn.iPK_CustEnum 
+				where  TNOC_Subject.iPk_AplcnId=dpt.iPk_AplcnId and TNOC_Subject.Fk_StatusId=1 and isnull(TNOC_Subject.bIsTNOC,0)=1 and isnull(TNOC_Subject.bIsPNOC,0)=0  
+				FOR XML PATH('')),1,1,''),'NA')) as Course_N_Subject_TNOC
+	,
+	  Concat('Courses :- ',IsNull(STUFF((Select ', '+CSTMENUM.sName    
+				from (select Distinct iFK_CourseId ,DEPTVSCURS.iPk_AplcnId,value,Fk_StatusId,bIsTNOC,bIsPNOC from DEPTVSCURS cross apply string_split(Cast(iFK_CourseId as nvarchar(max)),',')) PNOC_course   
+				inner join CSTMENUM on PNOC_course.value=CSTMENUM.iPK_CustEnum    
+				where  PNOC_course.iPk_AplcnId=dpt.iPk_AplcnId and PNOC_course.Fk_StatusId=1 and (isnull(PNOC_course.bIsTNOC,0)=1 and isnull(PNOC_course.bIsPNOC,0)=1 or isnull(PNOC_course.bIsTNOC,0)=0 and isnull(PNOC_course.bIsPNOC,0)=1)
+				FOR XML PATH('')),1,1,''),'NA'),' | Subjects :- ',IsNull(STUFF((Select ', '+CSTMENUM.sName +' [ '+crsn.sName+' ]'    
+				from (select DEPTVSCURS.iPk_AplcnId,value,Fk_StatusId,iFK_CourseId,bIsTNOC,bIsPNOC from DEPTVSCURS cross apply string_split(sSubjectDepart,',')) PNOC_Subject    
+				inner join CSTMENUM on PNOC_Subject.value=CSTMENUM.iPK_CustEnum 
+				inner join CSTMENUM crsn on PNOC_Subject.iFK_CourseId=crsn.iPK_CustEnum
+				where  PNOC_Subject.iPk_AplcnId=dpt.iPk_AplcnId and PNOC_Subject.Fk_StatusId=1 and (isnull(PNOC_Subject.bIsTNOC,0)=1 and isnull(PNOC_Subject.bIsPNOC,0)=1 or isnull(PNOC_Subject.bIsTNOC,0)=0 and isnull(PNOC_Subject.bIsPNOC,0)=1 )
+				FOR XML PATH('')),1,1,''),'NA')) as Course_N_Subject_PNOC,
+				clg.sCollegeTypeId as PNOCStatus
+	from DEPTVSCURS dpt
+  inner join APLCTNBASICINFO clg on clg.iPk_ClgID = dpt.iPk_AplcnId
+  inner join CSTMENUM cst on cst.iPK_CustEnum=clg.iClgTyp
+  where iFK_DeptId = @menuId and clg.iFk_TrstInfoId =@PartyId and ( dpt.bIsTNOC=1 or  dpt.bIsPNOC=1)
+  order by clg.dtAplcnDate desc
+-----Added this Query by Vivek on 17.03.2023 To display the TNOC or PNOC Courses and subjects
+
+--Commented by Vivek on 17.03.2023----
+----select distinct iPk_AplcnId as ID,cst.sName as CollegeType,  Upper(clg.sNameOfClg) as Text, clg.dtAplcnDate,(case when bIsTNOC=1 then 'Active'else 'Deactive' end) TNOCStatus ,(case when bIsPNOC=1 then 'Active'else 'Deactive' end) PNOCStatus,
+----	  (select count(*) from MST_Apln where iFKCLG_ID = clg.iPk_ClgID ) PartyID,
+----	  IsNull(STUFF((Select ','+CSTMENUM.sName    
+----				from (select Distinct iFK_CourseId ,DEPTVSCURS.iPk_AplcnId,value from DEPTVSCURS cross apply string_split(Cast(iFK_CourseId as nvarchar(max)),',')) T1    
+----				inner join CSTMENUM on T1.value=CSTMENUM.iPK_CustEnum    
+----				where  T1.iPk_AplcnId=dpt.iPk_AplcnId    
+----				FOR XML PATH('')),1,1,''),'NA') CourseName
+----	  ,IsNull(STUFF((Select ','+CSTMENUM.sName    
+----				from (select DEPTVSCURS.iPk_AplcnId,value,Fk_StatusId from DEPTVSCURS cross apply string_split(sSubjectDepart,',')) T1    
+----				inner join CSTMENUM on T1.value=CSTMENUM.iPK_CustEnum    
+----				where  T1.iPk_AplcnId=dpt.iPk_AplcnId   and T1.Fk_StatusId =1
+----				FOR XML PATH('')),1,1,''),'NA') subjectName,
+----				isnull(dpt.bIsTNOC,0) bIsTNOC, isnull(dpt.bIsPNOC,0) bIsPNOC
+----	  from DEPTVSCURS dpt
+----  inner join APLCTNBASICINFO clg on clg.iPk_ClgID = dpt.iPk_AplcnId
+----  inner join CSTMENUM cst on cst.iPK_CustEnum=clg.iClgTyp
+----  where iFK_DeptId = @menuId and clg.iFk_TrstInfoId =@PartyId and ( dpt.bIsTNOC=1 or  dpt.bIsPNOC=1)
+----  order by clg.dtAplcnDate desc
+ --Commented by Vivek on 17.03.2023----
+end
