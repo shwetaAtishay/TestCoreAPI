@@ -2511,7 +2511,7 @@ namespace DL
 
             return objResponseData1;
         }
-
+        
         public ResponseData WomenCount(string CollegeId, string TrustId)
         {
             

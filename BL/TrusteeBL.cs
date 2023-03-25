@@ -221,7 +221,7 @@ namespace BL
             return objAdminDL.CheckDraftValidationForEntry(clgID, courses, subjects);
 
         }
-        
+      
         public ResponseData GetCollegeDetailsForPreview(int clgID)
         {
             return objAdminDL.GetCollegeDetailsForPreview(clgID);

@@ -34,6 +34,7 @@ namespace DL
             }
             catch (Exception ex)
             {
+                con.Close();
                 throw ex;
             }
             finally
@@ -51,13 +52,15 @@ namespace DL
             try
             {
 
-            dt = new DataTable();
-            adpt = new SqlDataAdapter(cmd);
-            adpt.Fill(dt);
-            con.Close();
-            return dt;
-            }catch(Exception e)
+                dt = new DataTable();
+                adpt = new SqlDataAdapter(cmd);
+                adpt.Fill(dt);
+                con.Close();
+                return dt;
+            }
+            catch (Exception e)
             {
+                con.Close();
                 throw e;
             }
             finally
@@ -79,10 +82,12 @@ namespace DL
             try
             {
                 adpt.Fill(dt);
+                con.Close();
                 return dt;
             }
             catch (Exception ex)
             {
+                con.Close();
                 throw ex;
             }
             finally
@@ -117,13 +122,15 @@ namespace DL
             try
             {
 
-            ds = new DataSet();
-            adpt = new SqlDataAdapter(cmd);
-            adpt.Fill(ds);
-            con.Close();
-            return ds;
-            }catch(Exception e)
+                ds = new DataSet();
+                adpt = new SqlDataAdapter(cmd);
+                adpt.Fill(ds);
+                con.Close();
+                return ds;
+            }
+            catch (Exception e)
             {
+                con.Close();
                 throw e;
             }
             finally
@@ -145,10 +152,12 @@ namespace DL
             try
             {
                 adpt.Fill(ds);
+                con.Close();
                 return ds;
             }
             catch (Exception ex)
             {
+                con.Close();
                 throw ex;
             }
             finally
@@ -161,35 +170,74 @@ namespace DL
         {
             if (con.State == ConnectionState.Closed)
                 con.Open();
-            cmd = new SqlCommand(spName, con);
-            cmd.CommandTimeout = 0;
-            cmd.CommandType = CommandType.StoredProcedure;
-            return cmd.ExecuteScalar();
+            try
+            {
+
+                cmd = new SqlCommand(spName, con);
+                cmd.CommandTimeout = 0;
+                cmd.CommandType = CommandType.StoredProcedure;
+                return cmd.ExecuteScalar();
+            }
+            catch (Exception e)
+            {
+                con.Close();
+                throw e;
+            }
+            finally
+            {
+                con.Close();
+            }
         }
 
         public static object ExecuteScalarFunction(string spName, SqlParameter[] param)
         {
             if (con.State == ConnectionState.Closed)
                 con.Open();
-            cmd = new SqlCommand(spName, con);
-            cmd.CommandTimeout = 0;
-            cmd.CommandType = CommandType.StoredProcedure;
-            cmd = AddParameters(cmd, param);
-            object obj = cmd.ExecuteScalar();
-            con.Close();
-            return obj;
+            try
+            {
+
+                cmd = new SqlCommand(spName, con);
+                cmd.CommandTimeout = 0;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd = AddParameters(cmd, param);
+                object obj = cmd.ExecuteScalar();
+                //con.Close();
+                return obj;
+            }
+            catch (Exception e)
+            {
+                con.Close();
+                throw e;
+            }
+            finally
+            {
+                con.Close();
+            }
         }
 
         public static string ExecuteScalarFunction_String(string spName)
         {
             if (con.State == ConnectionState.Closed)
                 con.Open();
-            cmd = new SqlCommand(spName, con);
-            cmd.CommandTimeout = 0;
-            cmd.CommandType = CommandType.StoredProcedure;
-            string str = Convert.ToString(cmd.ExecuteScalar());
-            con.Close();
-            return str;
+            try
+            {
+
+                cmd = new SqlCommand(spName, con);
+                cmd.CommandTimeout = 0;
+                cmd.CommandType = CommandType.StoredProcedure;
+                string str = Convert.ToString(cmd.ExecuteScalar());
+                //con.Close();
+                return str;
+            }
+            catch (Exception e)
+            {
+                con.Close();
+                throw e;
+            }
+            finally
+            {
+                con.Close();
+            }
         }
 
         public static Dictionary<string, string> ExecuteQueryWithMulipleOutputType(
@@ -215,6 +263,7 @@ namespace DL
             }
             catch (Exception ex)
             {
+                con.Close();
                 throw ex;
             }
             finally

@@ -455,7 +455,7 @@ namespace TestCoreAPI.Controllers
             return _objTrusteeBL.CheckDraftValidationForEntry(clgID, courses, subjects);
 
         }
-        
+              
         [HttpGet]
         [Route("GetCollegeDetailsForPreview")]
         public ResponseData GetCollegeDetailsForPreview(int clgID)
